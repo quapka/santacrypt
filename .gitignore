@@ -1,6 +1,23 @@
-*.aux
-*.log
+# Ignore TeX intermediate files
 *.eps
-*.pdf
+*.aux
 *.bbl
 *.blg
+*.log
+*.out
+*.toc
+*.lof
+*.lot
+
+*.pdf
+
+*.pyo
+*.pyc
+*.mypy_cache
+
+_minted*
+build/
+
+svg-inkscape
+
+ignore/
