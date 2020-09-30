@@ -11,7 +11,7 @@
 
 \begin{abstract}
     % FIXME simplify
-This text investigates the state of the art security of JavaCards. Firstly, the JavaCard platform and its defensive mechanisms are described. Secondly, the author introduces few existing attacks against the JavaCard platform. Furthermore, the author remarks that with rising number of attacks it is increasingly more difficult to systematically test a real JavaCard against all of them and assess the level of security of the JavaCard. Then the design a new tool JavaCard Vulnerability Scanner created by the author is introduced, which presents possible solution to the previous situation. This tool can automatically test the security of a real JavaCard against several of the previously presented attacks, moreover it is also extensible with other attacks in the future. Finally, results from the execution of JavaCard Vulnerability Scanner on several JavaCards are discussed.
+This text investigates the state of the art security of JavaCards. Firstly, the JavaCard platform and its defensive mechanisms are described. Secondly, the author introduces few existing attacks against the JavaCard platform. Furthermore, the author remarks that with rising number of attacks it is increasingly more difficult to systematically test a real JavaCard against all of them and assess the level of security of the JavaCard. Then the design of a new tool JavaCard Vulnerability Scanner created by the author is introduced, which presents a possible solution to the previous situation. This tool can automatically test the security of a real JavaCard against several of the previously presented attacks, moreover it is also extensible with other attacks in the future. Finally, results from the execution of JavaCard Vulnerability Scanner on several JavaCards are discussed.
 \keywords{JavaCard security analysis \and smartcard \and JavaCard Vulnerability Scanner \and \texttt{javus}}
 \end{abstract}
 
@@ -20,9 +20,11 @@ This text investigates the state of the art security of JavaCards. Firstly, the 
 
 \section{Introduction}
 
-This text follows the structure of the master thesis Security analysis of JavaCard Virtual Machine~\cite{Kvapil2020thesis} defended by the author in September 2020. The text is mostly comprised of excerpts from the thesis. The reader is welcomed to read the thesis if he or she wishes to get more in-depth discussion of the various topics. The section~\ref{sec:fuzzing} is explained in a little bit more detail in here than in the original thesis.
+This text was created to propose a talk for the Keymaker track at Mikulášská kryptobesídka 2020\footnote{Czech and Slovak crypto related conference, see \url{https://mkb.tns.cz/cfp.htm}.}. Let us hope that the current circumstances will allow it to happen. This text follows the structure of the master thesis Security analysis of JavaCard Virtual Machine~\cite{anon2020thesis} defended by the author in September 2020. The text is mostly comprised of excerpts from the thesis. The reader is welcomed to read the thesis if he or she wishes to get more in-depth discussion of the following topics.
+% The section~\ref{sec:fuzzing} is explained in a little bit more detail in here than in the original thesis.
+% TODO introduce each section
 
-\section{State of the art of JavaCard security}
+\section{State of the art of JavaCard security\label{sec:state-of-the-art}}
 JavaCard technology is based on the Java programming language and allows programs created in Java to be executed on secure devices such as smartcards. Similarly to Java, Java Card system is made up from multiple components such as Java Card Virtual Machine (JCVM), Java Card Runtime Environment (JCRE), Java Card Application Programming Interface (JCAPI) and additionally Java Card Convertor(JCC).  Smartcards are pocket sized devices with an embedded microchip. Smartcard's chip contains components such as CPU, RAM and ROM and non-volatile memory, known from other computing devices. However, the components inside a smartcard chip are much more limited in their capabilities. Typical size of a user RAM is around 12K. The size of non-volatile memory (that is a memory, that allows persistant data storage) is higher at around 16K and ROM is the biggest with 32-48K. Also, the computing power of a CPU inside a smart card is nowhere near the computing power of CPUs used in computers.
 
 Java Card technology is released in multiple versions, the newest one, at the time of writing this text is the version 3.1. The Java Card platform specifications can be accessed at~\cite{jcspecs31download}.
@@ -49,7 +51,7 @@ Apart from creating CAP files JCC can also create export files for future conver
 
 Before the CAP file is downloaded to the target device an off-card verifier can be utilized to verify whether the file conforms to the specifications for a given SDK version. To load a converted CAP file onto a smart card we need a Card Acceptance Device (CAD; smart card reader).
 
-Once a JavaCard is inserted into a reader we can use an installation tool (see~\ref{subsubsec:gpp}) to load the CAP file onto the device. The smart card itself has an installation program, which needs to follow the specifications in~\cite{jcspecs31download}.
+Once a JavaCard is inserted into a reader we can use an installation tool (e.g.~\cite{globalplatform}) to load the CAP file onto the device. The smart card itself has an installation program, which needs to follow the specifications in~\cite{jcspecs31download}.
 % FIXME the surroungding paragraphes!!
 
 There are three steps that need to take place before the new applet can be used. The applet's CAP file needs to be loaded on the target device, than linked and finally the applets \mintinline{bash}{install(byte[], short, byte)} method is invoked (if the \texttt{install} method is not implemented then applet's objects cannot be created and initialized~\cite{jcspecs31download}). After the installation JavaCard RE interacts with the applet mostly through the methods \texttt{select}, \texttt{process}, \texttt{deselect}, \texttt{uninstall}.
@@ -57,7 +59,7 @@ There are three steps that need to take place before the new applet can be used.
 % After all three steps proceed successfuly the applet is ready and can be used. In case of successful installation of an applet packgage the applet is made
 
 Applets and packages are identified on card by their Application ID (AID) defined in ISO 7816-5~\cite{jcspecs31download}. AID value is concatenated from Registered Application Provider Identifier (RID) and Proprietary Application Identifier Extension (PIX)~\cite{globalplatform}. The communication with the applet is facilitated through Application Protocol Data Unit (APDU). 
-% The layout of general APDU command and response is in table~\ref{tab:apdu}.
+% The layout of general APDU command and response is in the table~\ref{tab:apdu}.
 
 % \begin{table}
 %     % \begin{tabular}{lc}
@@ -96,7 +98,7 @@ Applets and packages are identified on card by their Application ID (AID) define
 
 When CAD wants to interact with a particular applet, it issues a special APDU containing the applets AID. JavaCard RE deselects (suspends) the currently selected applet by calling its \texttt{deselect} method and calls the \texttt{select} method of the applet that matches the AID. Further APDU payloads are then relayed to the applet through its \texttt{process} method. Finally, the \texttt{uninstall} method is called when a APDU requesting deletion of the applet is received by JCRE.
 
-    The \cla field from~\ref{tab:apdu} is used to differentiate higher level functionality of the applet. The \ins field is used to trigger particular operation in the applet. The \texttt{process} method usually implementes a \texttt{switch} statement that dispatches the \ins instructions to the respective methods. We will see the \ins field be used for communicating with the applets in POCs.
+    % The \cla field from~\ref{tab:apdu} is used to differentiate higher level functionality of the applet. The \ins field is used to trigger particular operation in the applet. The \texttt{process} method usually implementes a \texttt{switch} statement that dispatches the \ins instructions to the respective methods. We will see the \ins field be used for communicating with the applets in POCs.
 
     \subsection{Attack models and defensive mechanisms}
     % As we will see in the list of related work~\ref{sec:related-work}, t
@@ -139,7 +141,7 @@ The various JavaCard SDKs are equiped with tools used for off-card verifications
 
 
     \subsection{Existing logical attacks}
-    In our research we are interested in the logical attacks exclusively. We will present few of the previously published attacks. For more exhaustive list of the existing logical attacks see~\cite{Kvapil2020thesis,sergei,se:oracle:part1,se:oracle:part2,se:oracle:part3}.
+    In our research we are interested in the logical attacks exclusively. We will present few of the previously published attacks. For more exhaustive list of the existing logical attacks see~\cite{anon2020thesis,sergei,se:oracle:part1,se:oracle:part2,se:oracle:part3}.
 
     In his master's thesis~\cite{sergei} Sergei Volokitin presents several attacks against JavaCards.
     % ~\cite{sergei} describes maltitude of attacks.
@@ -201,7 +203,7 @@ Java Card Firewall Tester briefly introduced in~\cite{Mostowski07testingthe} is 
 Two notable JavaCard testing tools are JCAlgTest~\cite{jcalgtest} and\linebreak ECTester~\cite{ectester}, both developed at CRoCS~\cite{crocsweb}. However, both those tools assess the security and safety of the implementation of the cryptograhical primitives and algorithms and not the resistance of JCRE or JCVM to logical attacks.
 
 \section{JavaCard Vulnerability Scanner}
-    The work done in~\cite{Kvapil2020thesis} resulted in an automated testing tool called \projectname. The thesis explains its architecture, design choices and usage in much more detail. Here we will only present the most important points.
+    The work done in~\cite{anon2020thesis} resulted in an automated testing tool called \projectname. The thesis explains its architecture, design choices and usage in much more detail. Here we will only present the most important points.
     
     \subsection{The design of the testing framework}
 % First, we will start with the list of the specifications for the framework. Before we go through them one by one and look at the way that they are implemented in more detail we define some terms and explain the project structure.
@@ -221,7 +223,8 @@ Two notable JavaCard testing tools are JCAlgTest~\cite{jcalgtest} and\linebreak 
                 \begin{enumerate}
                     \item[\textbf{attack}] is the overarching term used for describing a (particular) way of exploiting a vulnerability in JCVM or JCRE\@. Especially, POCs described in previous section will be from now on in most cases referred to as attacks,
                         % When we talk about \textbf{a particular} attack we will try to name it as well to avoid confusion. For example, when we say \textbf{ArrayCopy attack} we are talking about the attack exploiting the \mintinline{java}{arrayCopy} method from class \mintinline{python}{javacard.framework.Util} as it is implemented in the directory \filepath{javus/javus/data/attacks/arraycopy},
-                    \item[\textbf{stage}] or fully \textbf{an attack stage} is one part of the attack, e.g. the installation of a CAP file, that is required by the attack to work. During another stage we could send an APDU command to a JavaCard. Good example of stages are instructions from the POCs from the section ~\ref{chp:state-of-the-art},
+                    \item[\textbf{stage}] or fully \textbf{an attack stage} is one part of the attack, e.g. the installation of a CAP file, that is required by the attack to work. During another stage we could send an APDU command to a JavaCard.
+                        %Good example of stages are instructions from the POCs from the section ~\ref{chp:state-of-the-art},
                     % \item[\textbf{scenario}] or fully \textbf{attack scenario} consists of all the stages of an attack, in the source code represented by a python class \mintinline{python}{Scenario}
                     \item[\textbf{run}] describes the execution of a set  of (one or more) attacks on a particular physical JavaCard and is usually referencing the \javusrun command, the expressions \textit{test run, analysis run} etc. are simply synonyms.
                 \end{enumerate}
@@ -253,7 +256,7 @@ Two notable JavaCard testing tools are JCAlgTest~\cite{jcalgtest} and\linebreak 
 
     After \shortappclass handles the command line arguments it hands the execution over to \mintinline{python}{javus.analyzer.AnalysisManager}, which iterates over the registered attacks (loaded from \filepath{registry.ini}). For each attack \mintinline{python}{AnalysisManager} loads the appropriate subclass of \shortbuilderclass respectively \shortexecutorclass that is responsible for building, respectively executing the attack. Each attack is then build for all supported SDK versions and executed on the target JavaCard.
 
-    The framework uses Docker to achieve cross-platformity or can be invoked natively on Linux. The results of the individual runs can be viewed in a simple web application (see figure~\ref{fig:web-interface-all}).
+    The framework uses Docker to achieve cross-platformity or can be invoked natively on Linux. The results of the individual runs can be viewed in a simple web application (see figure~\ref{fig:web-interface-pic}).
 
     \begin{figure}[htb!]
         \centering
@@ -295,7 +298,7 @@ While a way of fuzzing real JavaCards can yield interesting results (testing the
 Reference implementation mimics the usage of a CAD and a JavaCard, but everything is done on a software level. While the actual setup of fuzzing will be a bit different the speed up is expected to be significant. And not only that, because the \cref is a common binary we can take advantage of debugging tools and automatically investigate, how e.g.\ the \cref memory changes during the fuzz-testing. What we could potentially see are changes in the contexts that do not belong to the currently selected applet. At the moment those are only high-level ideas, but there does not seem to be anything preventing this kind of fuzzing.
 
 \section{The results on real cards and discussion}\label{chp:results}
-In this section we will utilize the attacks discussed in the section~\ref{chp:state-of-the-art} and the testing framework JavaCard Vulnerability Scanner presented in the previous section and analyze a set of real JavaCards. Aquiring a large number of distinct JavaCards is not an easy task (as they are usually hard to come by in small $< 1000$ quantities), however, thanks to the joined work of the members of CRoCS laboratory~\cite{crocsweb} we had an interesting variety of JavaCards available for testing. The tested JavaCard were fabricated between the years 2011 a 2017 and the operating systems on these cards were released between the years 2010 and 2018. The list of the cards can be seen in table ~\ref{tab:card-list}.
+In this section we will utilize the attacks discussed in the section~\ref{sec:state-of-the-art} and the testing framework JavaCard Vulnerability Scanner presented in the previous section and analyze a set of real JavaCards. Aquiring a large number of distinct JavaCards is not an easy task (as they are usually hard to come by in small $< 1000$ quantities), however, we had an interesting variety of JavaCards available for testing. The tested JavaCard were fabricated between the years 2011 a 2017 and the operating systems on these cards were released between the years 2010 and 2018. The list of the cards can be seen in the table ~\ref{tab:card-list}.
 
 \begin{table}[htb]
     \hfill
@@ -350,7 +353,7 @@ In this section we will utilize the attacks discussed in the section~\ref{chp:st
 \end{table}
 
 \subsection{\texttt{arraycopy}}\label{subsec:result-arraycopy}
-            As the reader can see in table~\ref{tab:best-arraycopy} only a single card was vulnerable to this attack. For every SDK version the cards \Cnewcard, \Fcard, \Gcard, \Hcard, \Inewcard prevented already the load of the malicious CAP \vulnscap. Each responded with the status word \swwrongdata, except the \Cnewcard, which has failed with \swunknown and \Inewcard with \swwrongdata. The \vulnscap could not have been installed on \Icard, \Ccard and the status word \swconditionsnotsatisfied was returned.
+            As the reader can see in the table~\ref{tab:best-arraycopy} only a single card was vulnerable to this attack. For every SDK version the cards \Cnewcard, \Fcard, \Gcard, \Hcard, \Inewcard prevented already the load of the malicious CAP \vulnscap. Each responded with the status word \swwrongdata, except the \Cnewcard, which has failed with \swunknown and \Inewcard with \swwrongdata. The \vulnscap could not have been installed on \Icard, \Ccard and the status word \swconditionsnotsatisfied was returned.
             % \Inewcard also acted unlike \Icard with the load failing with \mintinline{bash}{0x6A80 - WRONG_DATA}.
             % \import{src/tables/subtables}{best-arraycopy.tex}
             % FIXME card stopped working 97 JCRE muteing card
@@ -458,8 +461,7 @@ In this section we will utilize the attacks discussed in the section~\ref{chp:st
         As observed in the previous results and in our own as well it is apparent that different JavaCards implement the on-card byte code verifiers and run-time checks differently. This is not surprising, considering that the complete JavaCard RE is left to the JavaCard vendors to be implemented and already~\cite{Mostowski07testingthe} showed that the specifications are not always followed completely or can be ambiguous.
         % Since some cards perform better it suggests that the vendors could learn from each other in order to improve the JavaCard platformi
         % From this perspective we see potential in a project like JavaCard Vulnerability Scanner that could help bringing more transparency into the security of JavaCards. Our tool is capable to test a JavaCard across various SDKs and attacks and can gather results similar to~\ref{tab:results-overview}.
-        We see potential in a project like JavaCard Vulnerability Scanner, because it can help to bring more transparency into the security of JavaCards. Our tool is capable of testing a JavaCard across various SDKs and attacks and can gather results similar to the ones in the table~\ref{tab:results-overview}. Moreover, the web application can be made public and therefore researches could share the results.
-        We invite other developers and researchers to use this tool locally, find its shortcomings or opportunities for new features and submit both at \url{\githuburl}. 
+        We see potential in a project like JavaCard Vulnerability Scanner, because it can help to bring more transparency into the security of JavaCards. Our tool is capable of testing a JavaCard across various SDKs and attacks and can gather results similar to the ones in the table~\ref{tab:results-overview}. Moreover, the web application can be made public and therefore researches could share the results. We invite other developers and researchers to use this tool locally, find its shortcomings or opportunities for new features and submit both at \url{\githuburl} (incomplete URL due to anonymization). 
         % As stated previously, the JavaCard Vulnerability Scanner is still a prototype. It can serve as a base for future analysis of JavaCards, because it can be already used for executing regular applets and not only testing logical attacks. The implementation was done in such a way that it allows to switch different parts or extend another one. In case the JavaCard community will find JavaCard Vulnerability Scanner useful the web application can be moved into a separate project and be hosted as a public service that would allow not only researchers to submit or verify their own results from JavaCard Vulnerability Scanner. Such public database could speed up the development of the security of the JavaCard Virtual Machine JavaCard Runtime Environment and also help to make the applications developed for this platform overall more secure.
 
         % For now, however, we invite other developers and researchers to use this tool locally, find its shortcomings or opportunities for new features and submit both at \url{\githuburl}. It would only be for the better if academic results would affect the non-academic world and vice-versa. Tools developed just for the sake of satisfying formal academic requirements are bound to die out quickly.
