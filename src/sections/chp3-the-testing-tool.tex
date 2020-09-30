@@ -1,0 +1,104 @@
+\chapter{JavaCard Vulnerability Scanner the JavaCard testing framework}
+Naturally, a question arises: Is there even a need for a tool, that would test the shortcomings of JavaCard VM and JavaCard RE?  In the first chapter we have mentioned previous research, some of which include a source code for a POC attack as a part of its results. However, if the reader imagines himself holding a JavaCard and wondering, whether it is vulnerable to a specific kind of an attack there is still \textit{a lot} of work to be done. Some of the POCs are \textit{only} included in the original paper and not accompanied with the source and build files. Or in the case of vulnerabilities discovered by Security Explorations the source code is included (as a ZIP archive), but the attacks are automated only for use with the reference implementation of JCRE. Also, they are built only with SDK 3.0.5GA. Given the number of new attacks discovered in the last years~\cite{se:oracle:part1, se:oracle:part2, se:oracle:part3, se:gemalto:part1, se:gemalto:part2} it is increasingly harder to perform systematic security analysis of a real JavaCard against all known (logical) attacks.
+
+
+Overall, we believe, that the JavaCard community would benefit from an automated testing framework, that cuts down the time and work required to test a real JavaCard significantly. And so the answer to the question phrased above is: Yes. JavaCard Vulnerability Scanner allows the user to test the integrated attacks  for all SDK versions for which the attack is built. After the user performs the initial setup of the framework (see~\ref{sec:invocation}) she only needs to insert a JavaCard into a smart card reader and invoke the main utility \javus. The results are presented through locally served web pages.
+
+Currently, all the vulnerabilities described with POCs in chapter~\ref{chp:state-of-the-art} are supported by JavaCard Vulnerability Scanner. Further more, some of the vulnerabilities presented in~\cite{sergei} have been manually tested and will be added once they can be build automatically.
+
+
+% \projectname comes with a command line utility called \javus. Whenever we talk about the complete framework we will use \projectname, but in case we describe the utility we will use \javus.
+
+\input{src/chapters/design}
+
+\input{src/chapters/attack-recipe}
+
+
+
+    \section{Invocation of \javus}\label{sec:invocation}
+        \projectname has a several software dependencies (see the list Appendix in~\ref{subsec:3rd-party}) and it also needs the access to the hardware peripheral devices --- the smartcard readers. Due to those reasons, it is not so straightforward to run \javus. The testing tool is also required to be cross-platform --- execute at least on Linux and Windows. Therefore, we will take a moment now to explain, how to execute \javus in various environments. To avoid any confusion --- the testing tool operates on a physical JavaCard, which implies, that the user needs a smartcard reader and a JavaCard plugged in.
+
+        \subsection{Native invocation on Unix platforms}\label{subsec:native-invocation}
+        This tool was developed natively on Linux (Ubuntu 18.04). Invoking the framework on Linux is the easiest way how to perform the analysis, because we have a direct access to the smartcard readers (no matter if built-in or external ones). The downside of this approach is the need to install several software tools directly on the system. In order to bootstrap the Ubuntu environment the user can utilize the Bash script \mintinline{bash}{bin/bootstrap-ubuntu-18.04.sh}. It will install all the necessary software requirements. The details, along with a setup script are in the appendix. The bootstrap script can also be used from within a virtual environment (tested with VirtualBox v6.1.10), however, the user will need to make sure, that the smartcard readers are accessible inside the virtual environment . Once everything is set up correctly and a single JavaCard is inserted  into the reader the command \mintinline{bash}{pipenv run javus} can be invoked. Or if Pipenv is activated, \javus can be called directly, without any prefix.
+
+        \subsection{Building a Docker image for Docker container}\label{subsec:dock-build}
+        Nowadays, a popular solution to achieve cross-platformity is Docker.  It is a form of virtualization, where the main idea is to create the smallest possible environment (called container), that has all the necessary dependencies and run a script/binary within this container. To start the user needs to write a \mintinline{bash}{Dockerfile}, that contains directives, that specify the various dependencies. Using this file Docker can build an \textit{image}, which is sort of a blueprint. A running instance of a Docker image is then a Docker container. A \mintinline{bash}{Dockerfile} directives define various stages (those are useful to speed up the build process of a Docker image). Again, we need the access to the underlying smartcard readers. This obstacle defeats a bit the cross-platform feature of Docker, but we can overcome it. What we need to do, is to pass the smartcard readers into the Docker container allowing the framework to see them. Secondly, we will expose the port \mintinline{bash}{5000} for the viewer application, so that it is accessible outside of the container.
+
+        % FIXME add to dockerhub?
+        The Docker image for JavaCard Vulnerability Scanner is not available for download yet, but the user can build it locally. This requires Docker to be installed and then to run:
+        \begin{minted}[fontsize=\footnotesize]{bash}
+$ docker build --tag javus .
+[...]
+# or use the develpoment tool Invoke and run
+$ inv dock
+[...]
+        \end{minted}
+
+        As explained previously, making it so that the Docker container sees the smartcard readers requires different setup on Linux and Windows platforms.
+
+        \subsection{Starting a Docker container on a Linux host}\label{subsec:inv-docker-unix}
+        For Linux things are simpler. During the startup of the container we need to give the absolute paths to the USB devices. For the convenience of the user we have added a Bash script \mintinline{bash}{bin/javus-docker-unix}, that tries to find all the available smartcard readers and starts the \mintinline{bash}{javus-container} Docker container with the readers visible to the application inside.
+
+
+        \subsection{Starting \javus inside a VirtualBox}\label{subsec:vb-invocation}
+        In case the previous solutions do not work, there is one more option. It requires installing and setting up VirtualBox with Ubuntu 18.04 machine and then following the instruction in~\ref{subsec:native-invocation} (inside the Ubuntu virtual machine). As with previous solutions, the user needs to make sure, that the virtual environment \textit{sees} the smartcard readers. The process explained in steps:
+
+        \begin{enumerate}
+            \item install the newest version of VirtualBox (tested by the author on v6.1.10) and the corresponding version of the VirtualBox ExtensionPack,
+            \item\label{enum:vb-ubuntu-iso} create a new Ubuntu 18.04 based virtual machine in VirtualBox,
+            \item set up USB filters in VirtualBox to pass through the smartcard readers into the machine from~\ref{enum:vb-ubuntu-iso},
+            \item use Git to clone the current version of JavaCard Vulnerability Scanner into the Ubuntu guest and bootstrap the environment as in~\ref{subsec:native-invocation}.
+        \end{enumerate}
+
+        This approach should work on any platform, that supports VirtualBox.
+
+        \subsection{Starting a Docker container on a Windows host}
+        The situation on Windows is more complicated. First of all, there are different versions of Docker~\cite{dockertoolbox, dockerforwindows}, that can be installed on Windows machine and, only Docker Toolbox~\cite{dockertoolbox} allowed to pass the smartcard readers. Together with Docker the user should get also VirtualBox and \mintinline{bash}{docker-machine} already as one of the virtual machines. The user will need to follow similar steps from the previous subsection \label{subsec:vb-invocation} of setting up the VirtualBox, so that the \mintinline{bash}{docker-machine} has access to the smartcard readers.
+
+        Since there are multiple ways of invoking the command line utility \javus (all of the presented solutions are in some sense just complicated wrappers, that at the end invoke \javus) we will unify the invocation of JavaCard Vulnerability Scanner in the examples and simply write \javus, the reader is expected to substitute this command in case he is invoking the utility in a different way (e.g. using \mintinline{bash}{javus-docker-unix}).
+
+
+% component was required, but the applets allows installation with it missing
+% FIXME it worked on few cards - check if the components are required or not in the particular specification
+
+
+\subsection{Discovering discrepencies between off card and on-card BCV}\label{subsec:onofffuzzing}
+
+    \cite{ossfuzz} shows, how fuzzing technique can be utilized for testing the robustnes and security of applications. We have not seen this technique used in the area of Java Card platform. Fuzz testing is based on multitude of random or semi-random test inputs. For real JavaCards it is what to fuzz, because if we just tried to flood the JavaCard with APDUs we would probably quicky block or at least mute the card.
+        One possible fuzzing scenario is the following, we will start with a working CAP file, then create a fuzzed version of that file. If this new CAP file fails the off-card verification process, we will attempt to install it on a real card. If the card accepts it, it means, that the on-card bytecode verifier is not \textit{aligned} with the off-card one. On the next few lines the reader can see pseudo code of this fuzzing technique:
+
+\begin{minted}[linenos]{text}
+ generate a valid CAP file valid.cap
+ use fuzz valid.cap to generate fuzzed.cap
+ verify fuzzed.cap with off-card
+ if verification succeeds:
+    continue to line 1
+ else:
+    try to install fuzzed.cap onto a target JavaCard
+    if the installation fails:
+        continue to line 1
+    else: 
+        save the file fuzzed.cap as witness.cap
+\end{minted}
+We have yet to fully explore this technique, but within minutes of trying it we had first few \texttt{witness.cap} files, for which the off-card verifier gave an error, however a card allowed the installation. We have used~\cite{radamsa} for fuzzing.
+
+
+
+    % \section{Final notes about JavaCard Vulnerability Scanner}
+    %         Since this project consists of several different command line utilities and features, that cover the development of this project and also its usage, we provide a list explaining shortly each of them to help the reader navigate in the tools.
+
+
+%                 \begin{enumerate}[align=left]
+%                     \item[\texttt{test}\label{enum:inv-test}] tests the project by executing the complete Python test-suite (the underlying test runner is Pytest),
+%                     \item[\texttt{check}] executes checks on the live environment. In contrast to testing, checking uses the live environment. For example, it checks, that the necessary dependencies, like Ant, are installed,
+%                         \label{enum:inv-check}
+%                     \item[\texttt{develop}] sets up the development in such a way, that the subsequent edits are immediately reflected in the \javus utility (speeds up the development, because the tool does not need to be installed after every edit),
+%                     \item[\texttt{dock}] builds a fresh Docker image from the project,
+%                     \item[\texttt{docs}] builds the documentation for the project.
+%                 \end{enumerate}
+
+%             Each Invoke task is accessible from the command line by executing \texttt{inv[oke] <task-name>} from the command line. The \texttt{<task-name>} is a placeholder, so for example to execute the test suite one has to call \texttt{inv test}.
+
+%             \subsection{The \javusdev utility}\label{subsubsec:javusdev}
+
+

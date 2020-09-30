@@ -1,0 +1,60 @@
+\documentclass{article}
+%% The preamble
+\usepackage[english]{babel} % Babel
+\usepackage{import}
+
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+
+\usepackage{underscore}
+
+\usepackage{rotating}
+
+% \usepackage{amssymb}
+\usepackage{pifont}
+
+
+\usepackage{xcolor}
+
+\usepackage{bm}
+
+
+\definecolor{greeny}{RGB}{0,128, 0}
+\definecolor{redy}{RGB}{255,0, 0}
+\definecolor{bluey}{RGB}{0,0,255}
+\newcommand{\passmark}{{\color{greeny}\ding{51}}}%
+\newcommand{\failmark}{{\color{red}\ding{55}}}%
+\newcommand{\skipmark}{{\color{blue}$\circ$}}%
+\newcommand{\missmark}{$\bm{\circ}$}%
+\newcommand{\missmarkx}{$\bm{\ocircle}$}%
+
+
+\newcommand*\rot{\rotatebox{90}}
+\usepackage{booktabs}
+
+\usepackage[maxfloats=256]{morefloats}
+\maxdeadcycles=1000
+\begin{document}
+\input{sections.tex}
+% \section{ArrayCopy}
+% \import{./}{arraycopy.tex}
+% \import{./}{best-arraycopy.tex}
+
+% \section{ArrayOps}
+% \import{./}{arrayops.tex}
+% \import{./}{best-arrayops.tex}
+
+% \section{BaloadBastore}
+% \import{./}{baload-bastore.tex}
+% \import{./}{best-baload-bastore.tex}
+
+% \section{NativeMethod}
+% \import{./}{nativemethod.tex}
+% \import{./}{best-nativemethod.tex}
+% % \import{./}{best-cast-to-short.tex}
+% \import{./}{best-referencelocation.tex}
+% % \import{./}{best-stack-underflow.tex}
+% \import{./}{best-staticfield-ref.tex}
+% \import{./}{best-swap-x.tex}
+% \import{./}{best-transaction-confusion.tex}
+\end{document}

@@ -1,0 +1,158 @@
+\section{The related work}\label{sec:related-work}
+    
+    % 2001
+    In~\cite{oncardleroy} \citeauthor{oncardleroy} first reviews how the traditional off-card bytecode verification algorithm works point out its limitations. Afterwards a novel verification algorithm is presented, that requires much less RAM and can therefore be ran on-card, however, it cannot verify all type-correct applets. But this limitation is fixed with off-card transformation of the applet and therefore all type-correct applets can be verified on-card.
+
+    % 2007
+    \citeauthor{Mostowski07testingthe} analyze in \cite{Mostowski07testingthe}, whether the implementation of JCRE Firewall Mechanism on real JavaCards complies with the JCRE specification version 2.2.2. Among other, they test accesses to foreign objects through shareable interfaces, calls to privileged API methods and context stack corruption through infinite recursive method call. They have developed the tool Java Card Firewall Tester, however, it is no longer available for download from~\cite{firewalltester}. They conclude, that all except one (regarding the shareable interface) violation of the JCRE specification are minor.
+
+% 2009
+\citeauthor{hogenboom} present an attack, that exploits the JavaCard type system. They use faulty implementation of transaction mechanism. This mechanism does not restore local array reference allocated within the trasnsaction to \texttt{null} when the transaction is aborted. An array \texttt{arraySlocal} of shorts can be used in the previous step and so after the abortion a \texttt{short[]} pointer is dangling in memory. Immediately after the transaction abortion a \texttt{byte[]} array \texttt{arrayB} is created in persistent memory, reclaiming the dangling pointer, which makes it valid for the current instance. However, the memory location pointed to by this pointer can be read as an array of shorts (throught the original \texttt{arraySlocal}). Which returns twice the size of the correctly allocated memory of \texttt{arrayB} (shorts are twice as big as bytes). A Proof of Concept (POC) code was presented as a part of the original paper~\cite{hogenboom}. It defines three instructions \prepareone, \preparetwo and \insreadmem. The first two instructions set up the necessary array references by exploiting the implementation bug explained above and the \insreadmem instructions attempts to read out the memory address at \texttt{P1P2} (sent as part of the APDU).
+
+% 2010
+\citeauthor{lanettrojan} present a working example of dumping a bigger parts JavaCard's memory in~\cite{lanettrojan}. A custom applet was developed and its CAP file's Method and Reference Location Components were modified before applet's installation. With such an applet the authors have been able to perform search and replace operations on memory regions not owned by the applet and so effectively broke the firewall mechanism. The attack was successfuly carried out on several real JavaCards.
+
+    % analyzed the JCRE Firewall Mechanism with respect to the specifications in~\ref{}
+    % \subsection{Combined Attacks and Countermeasures, 2010}
+    In~\cite{barbufirst} introduce~\citeauthor{barbufirst} as a first of its kind a combined attack against the JavaCard 3.0 Connected Edition. They combine a fault injection (shooting a laser beam on the smart card chip) and forging object references using the \texttt{getfield} and \texttt{putfield} byte code instructions. The targetted Java Card technology requires on-card byte coder verifier, however, the presented attack shows, that this one-time (during installation) security check can be circumvented.
+    % putfield, getfield
+
+
+    % \subsection{Java Card Operand Stack: Fault Attacks, Combined Attacks, and Countermeasures, 2011}
+    Combined attacks were further studied by~\citeauthor{barbusecond} in~\cite{barbusecond}. Firstly, a fault injection attack, that targets \texttt{if} statement branching is presented. Experimental results show success in around 70-80\% of the attempts to skip the expected branch and execute a different one. Then a way of breaking type safety through fault injection in the operand stack was proposed. Finally, three specific countermeasures against the presented attacks are introduced and compared.
+
+    % \subsection{Performance Evaluation of Java Card Bytecodes, 2007/8}
+    % \subsection{Java Card Virtual Machine Compromising from a Bytecode Verified Applet, 2015}
+
+    % \subsection{Memory Forensics of a Java Card Dump, 2015}
+
+    % \subsection{Logical attacks on secured containers of Java Card platform, 2017}
+
+% \section{State of the art attacks}
+    % \subsection{Good, Bad and Ugly Design of Java Card Security, 2016}
+    % FIXME MAJOR TUDOO
+    In his master's thesis~\citeauthor{sergei} presents several attacks against JavaCards.~\cite{sergei} describes maltitude of attacks. The most interesting ones are attacks on the secure containers such as \texttt{OwnerPIN}, the author first finds the object in memory, which is stored encrypted, then usses chosen plaintext cryptanalysis to recover, that the PIN is encrypted using ECB mode. The author further noticies similarities in the handling of \texttt{OwnerPIN} and \texttt{DESKey} objects and finds out, that the \texttt{OwnerPIN} can by decrypted easily. First, encrypted bytes of \texttt{OwnerPIN} are copied into a \texttt{DESKey} controlled by the attacker, then \texttt{getKey} method is called on the unsuspecting \texttt{DESKey} and the \texttt{PIN} is retrieved to the attacker.
+
+    \section{Security Explorations}\label{subsec:security-explorations}
+
+    In 2019 a company from Poland called Security Explorations\footnotemark released five notices~\cite{se:oracle:part1, se:oracle:part2, se:oracle:part3, se:gemalto:part1,se:gemalto:part2} that describe security vulnerabilities in JavaCards. Overall, they have reported 34 individual issues. The reports~\cite{se:oracle:part1, se:oracle:part2,se:oracle:part3} test the vulnerabilities on JavaCard Reference Implementation from Oracle~\cite{jcspecs31download} and cover issues like insufficient implementation of JCVM bytecode instructions and JCAPI methods or handling of CAP file and its insufficient verification. The individual issues have been verified by Security Explorations on the reference implementation (\texttt{cref}) of Java Card technology version 3.1 (currently available for download at~\cite{jcspecs31download}).
+
+The second batch of reports~\cite{se:gemalto:part1, se:gemalto:part2} analyze Gemalto Java Card based products and identify vulnerabilities in the SIM Toolkit applet (STK applet). Those vulnerabilities are caused by unmanaged or leaking memory references. Most notable is the result in~\cite{se:gemalto:part2}, where the authors used the discovered vulnerability to load Java Card applet over-the-air to a target SIM card. Furthermore, they conclude that it should be possible to exploit the vulnerabilities from~\cite{se:gemalto:part1, se:gemalto:part2} in such a way, that a hidden backdoor is loaded onto a SIM card.
+
+
+\footnotetext{The company has stopped operating, however, its lead security researcher Adam Gowdiak is now working under Adam Gowdiak Security Research (see \url{http://www.agsecurityresearch.com/}).}
+
+    The vulnerability noticies~\cite{se:oracle:part1, se:oracle:part2, se:oracle:part3} are also accompanied by a POC~\cite{se:downloadpage}, that help to demonstrate the issues. The POCs comprise of Java source files, custom Gen Tool and several batch scripts.
+
+    % The source files are used to produce different applets, which are further altered with the Java based Gen Tool (no manual edits of CAP files are needed). The accompanied batch scripts allow the user to see the vulnerabilites work against the Java Card Reference implementation. % ~\cite{}. FIXME
+
+We will go through the POCs exploiting the vulnerabilites in~\cite{se:oracle:part1, se:oracle:part2, se:oracle:part3} in greater detail, because we have included them in \projectname. Each POC consists of two applets \appletscap and \vulnscaporig (from which a malicious \vulnscap is generated with the Gen Tool). Every POC then defines several instructions (explained later), that are used to exploit the particular vulnerability.
+
+There aren't as many POCs as there are vulnerabilities discovered, because the POCs unite the vulnerabilities of similar nature. We will use the issue numbering as in the original reports. The following sections briefly describe the vulnerabilities from~\cite{se:oracle:part1}.
+
+\subsection{POC \texttt{arraycopy}}\label{subsec:arraycopy-explanation}
+Similarly, the JCAPI methods \arrayCopy and \arrayCopyNonAtomic from \mintinline[breaklines,breakafter=.]{python}{javacard.framework.Util} class~\cite{jcspecs31download} do not perform sufficient checks on input arguments. Both methods fail to prevent passing object instance (instead of an array) as an input argument. \cite{se:oracle:part1} mentions, that some similar methods do the input validation properly. The POC implements the instructions \readmem and \writemem, that can read and write memory through exploitation of one of the aforementioned methods.
+
+\subsection{POC \texttt{arrayops}}
+As was explained in~\ref{subsec:arraycopy-explanation}, it is not always the case, that array methods perform sufficient validation of the its arguments. A custom crafted object can be passed as an input argument instead of an array reference. Such object is then interpreted as an array of a very large size. The POC \arrayops exploits the methods \arrayFill, \arrayFillNonAtomic, \setShort, \setInt. The POC applet defines two instructions \readmem and \writemem, that allow to read and write outside of the allowed memory regions.
+
+\subsection{POC \texttt{baload_bastore}}
+The byte code instructions \baload and \bastore load byte or boolean from array, respectively store byte or boolean from array~\cite{jcspecs31download}. The array argument to \baload instruction is checked and Security Exception is raised if the array is an array of shorts, integers or objects. Otherwise, the execution proceeds. However, instead of an array the argument can be a single object and the checks pass as well. 
+The POC code defines six different instructions --- \ping, \status, \setup are used to check and setup the vulnerability state. The instructions \readmem and \writemem demonstrate reading and writing memory. Final instruction \cleanup is used to clean the initial exploit setup. The~\cite{se:oracle:part1} state the impact of the vulnerability is ``compromise of memory safety / arbitrary read access to card memory''.
+
+\subsection{POC \texttt{nativemethod}}
+The \texttt{Method} CAP file component is used to describe methods, that are defined within the CAP file. The \mintinline[breaklines,breakafter]{python}{method_info.method_header_info} specify whether the method is native or not. The values in the field \texttt{method_header_info} can be changed and make this method a native one. This approach can be used to call native methods such as~\texttt{readByte}, \texttt{readShort}, \texttt{writeByte} and \texttt{writeShort}, that should be inaccessible to the current class.
+The POC implements two instructions \nreadshort and \nwriteshort, that invoke the native methods \texttt{readShort} and \texttt{writeShort}, respectively. A short value can be read or written with those instructions, that would be otherwise inaccessible.
+
+
+\subsection{POC \texttt{referencelocation}}
+Some byte code instructions, like \getfield reference various fields and methods. Those references are stored as indeceses to the Constant Pool (\mintinline{python}{ConstantPool} CAP component), that contains tokens for the fields and methods at each index. The internal representation of those tokens is substituted for the indeces when a CAP file is loaded on JavaCard.~\cite{se:oracle:part1} refers to this process as ``linking''. The \texttt{ReferenceLocation} component stores the table of locations for each of the previously described substitutions.
+Before, the ``linking'' is done, each token value is checked to assure, that its value does not go beyond the size for the object (recall, that the token values refer to object fields and methods). If the value overflows, it is trimmed. However, if an entry in the \texttt{ReferenceLocation} table is omitted, the corresponding check of the token value is skipped as well, thus allowing the \getfield instruction access beyond the object size.
+The POC defines six instructions \getfieldins, \putfieldins\footnotemark, which allow to read and write the memory through a custom token value. 
+\footnotetext{The \texttt{<T>} refers to the particular type of the underlying byte code instruction defined in~\cite{jcspecs31download}.}
+
+\subsection{POC \texttt{staticfieldref}}
+As explained in~\ref{sec:jc:lifecycle} CAP file comprises of different CAP components one of which is \mintinline{python}{StaticField} component. This component is referenced through \constantstaticfieldref item~\cite{jcspecs31download}. The \texttt{offset} value is not checked and can be changed, to point to arbitrary value. Then, through the use of byte instructions \getstatic\footnotemark and \putstatic the memory at the new \texttt{offset} can be read and written, respectively. The POC uses single instruction~\getstaticins, that returns the \texttt{offset} value, that was maliciously altered after the POC CAP file conversion.
+\footnotetext{Both \getstatic and \putstatic represent several byte code instructions for particular types.}
+
+\subsection{POC \texttt{swap_x}}
+JCVM is stack based and uses frames to hold the information about the currently executed method, such as local variables and the operand stack. The byte code instruction \swapx allows to swap $M$ words with $N$ words, that reside in the operand stack directly below. The intention is to swap one or two words on the stack~\cite{jcspecs31download}. If larger values for $N$ are provided a potential return address or instruction override can happen.
+The POC code has a single instruction \triggerswapx, that invokes the malformed \swapx instruction. According to~\cite{se:oracle:part1} the instruction is expected to return \mintinline{python}{0x1234}, however, when executed in JCRE for \texttt{cref} a crash is observed in~\cite{se:oracle:part1} instead. When we have tested this POC on real JavaCards we have received the expected response as is discussed in~\ref{subsec:swapx} on four of them.
+
+
+\section{Related JavaCard testing tools}
+Riscure, Dutch company located in Delft, has a product called JCworkBench, that can be used to perform a robust security of a real JavaCard as demonstrated in~\cite{jcworkbench, riscurejcworkbenchpdf}. However, it is not clear from Riscure's website~\cite{riscureweb}, whether it can still be purchase as it is not listed there anywhere.\footnotemark
+
+\footnotetext{The tool was only found presumably for sale on a different website at \url{https://www.etesters.com/product/7E9C25F0-D8CC-0B99-67BC-8BF36D42FE30/smart-card-security-test-tool/}}
+
+Aforementioned Java Card Firewall Tester briefly introduced in~\cite{Mostowski07testingthe} is no longer available for download at~\cite{firewalltester} and the download site does not seem to be maintained anymore.
+
+Two notable JavaCard testing tools are JCAlgTest~\cite{jcalgtest} and\linebreak ECTester~\cite{ectester}, both developed at CRoCS~\cite{crocsweb}. However, both those tools assess the security and safety of the implementation of the cryptograhical primitives and algorithms and not the resistance of JCRE or JCVM to logical attacks.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+% \section{Logical attacks described in detail}
+%     % shareable interface
+%     \subsection{The Attacker Model}
+%     \subsection{Vulnerability Categories}
+%     \subsection{APDU Buffer}
+%     % \subsection{\texttt{static} fields}
+%     \subsection{Illegal cast/type confusion}
+%     SV 3.1.
+%     Illegal casting of an arbitrary short value to a reference
+%     Illegal casting of a class instance to an array
+
+%     \subsection{Bytecode Instructions}
+%     SE - Oracle
+%     \texttt{baload}
+%     \texttt{bastore}
+%     \texttt{getfield_a}
+%     \texttt{getfield_b}
+%     \texttt{getfield_s}
+%     \texttt{getfield_i}
+%     \texttt{putfield_a}
+%     \texttt{putfield_b}
+%     \texttt{putfield_s}
+%     \texttt{putfield_i}
+%     \texttt{swap_x}
+
+%     \subsection{JavaCard Virtual Machine API}
+%     SE - Oracle
+%     \texttt{javacard.framework.Util.arrayCopy}
+%     \texttt{javacard.framework.Util.arrayCopyNonAtomic}
+%     \texttt{javacard.framework.Util.arrayCompare}
+%     \texttt{javacard.framework.Util.arrayFill}
+%     \texttt{javacard.framework.Util.arrayFillNonAtomic}
+%     \texttt{javacard.framework.Util.setShort}
+%     \texttt{javacard.framework.Util.intx.JCint}
+
+%     SV
+%     3.3 Abuse of Transaction mechanism
+
+
+%     \subsection{CAP files}
+%     SE - Oracle
+%     \texttt{CONSTANT_StaticFieldref_info}
+%     \texttt{COMPONENT_ReferenceLocation}
+%     \texttt{COMPONENT_Method}
+
+%     \subsection{Subroutines}
+%     SE - Oracle
+%     \texttt{__checkMethod}
+%     \texttt{_getLocalReference}
+%     \texttt{_setLocalReference}
+%     \texttt{_getLocalShort}
+%     \texttt{_setLocalShort}
+%     \texttt{_getLocalInt}
+%     \texttt{_setLocalInt}

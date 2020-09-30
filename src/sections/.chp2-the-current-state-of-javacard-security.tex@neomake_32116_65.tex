@@ -1,0 +1,227 @@
+\chapter{State of the art of JavaCard security}\label{chp:state-of-the-art}
+% TODO explain APDU command response and the status words
+% FIXME unify smart card and smartcard
+% SDK Versions
+
+% JavaCard technology can run on JavaCard technology-enabled devices
+
+
+
+\section{Introduction to JavaCards}
+    
+% JavaCard
+% Converter
+%     input class files
+%     input export files
+%     output CAPs
+%         an optionallz EXP files
+% installation tool
+% components
+% Applets and packages
+%     applets are JavaCard technology programs
+% CAP file = applets, packages or both
+%     custom u1, u2, u4 types
+%     converter creates CAPs
+%     Compact/Extended format
+%     custom format, tags values
+%     JAR archive
+
+% Mangling with export files - sergei volotikin
+
+% AID
+%     managed by ISO, in the application we us 100*
+%     page 53. uniqueness of AIDs
+
+% Components?
+%     CAP=set of component
+%     Export Component
+%     Applet Component
+%     optional and required
+
+% private and public applets/packages
+% JavaCard allows multiple applets to run on the device
+
+% byte code instructions
+%     subset, same for many of the Java classes
+%     exceptions -> status words?
+
+% cite: The Java Card RE consists of an implementation of the Java Card virtual machine along
+% with the Java Card API classes
+
+% non-runtime security
+%     off-card, chain of trust
+
+% Runtime security
+%     applet firewall X shareable interface
+%     contexts, RE context
+%     RE uses special things, that are not part of API
+
+% Installation/deletion
+% Card session
+    
+
+% FIXME Java Card is an open platform allowing multiple applications to run along each other
+% FIXME go through cards
+We will start by introducing Java Card technology and smart cards. Java Card technology is based on the Java programming language and allows programs created in Java to be executed on secure devices such as smart cards. Similarly to Java, Java Card system is made up from multiple components such as Java Card Virtual Machine (JCVM), Java Card Runtime Environment (JCRE), Java Card Application Programming Interface (JCAPI) and additionally Java Card Convertor(JCC).  Smart cards are pocket sized devices with an embedded microchip. Smart card's chip contains components, such as CPU, RAM and ROM and non-volatile memory, known from other computing devices. However, the components inside a smart card chip are much more limited in their capabilities. Typical size of a user RAM is around 12K. The size of non-volatile memory (that is a memory, that allows persistant data storage) is higher at around 16K and ROM is the biggest with 32-48K. Also, the computing power of a CPU inside a smart card is nowhere near the computing power of CPUs used in computers.
+
+Java Card technology is released in multiple versions, the newest one, at the time of writing this thesis, is the version 3.1. The Java Card platform specifications can be accessed at~\cite{jcspecs31download}. Since the version 3.0 Java Card platform was split into Classic and Connected editions. The Connected edition targets devices, that have restricted resources, but are more powerful, than conventional smart cards described above. If we refer in our work to a version of Java Card Platform higher than 3.0 we will mean the Classid Edition.
+
+% In our work we focus only on the Classic edition for the version 3.0 and newer of Java Card technology.
+
+Each Java Card technology version is accompanied with a corresponding Java Card Software Development Kit (SDK). SDK equips Java Card developers with the tools needed for the development of Java Card programs. In the context of Java Card platform the programs are called Java Card applets, or simply applets. As we will show later in the text the behaviour of an particular applet with respect to security can differ across the SDKs (and smart cards it is installed on).
+
+% Classic and connected version.
+
+We call smart cards, that enable Java Card technology JavaCards. Because JavaCards are not that powerful they cannot make use of all the features of the Java programming langugage. For that reason, only a subset of Java is used for developing JavaCard programs. Specifically, the JCVM supports only a subset of Java Virtual Machine. For example, JCVM does not support Security Manager class, threads or variable-length arguments. Furthermore, only some Java data types, like \texttt{boolean}, \texttt{byte}, \texttt{short}, \texttt{int} and Objects or arrays, are supported --- this implies, that several byte code instructions for handling more complicated types are not supported (the complete subset is described in~\cite{jcspecs31download}).
+
+
+\section{JavaCard applet life-time}\label{sec:jc:lifecycle}
+
+
+% FIXME add note about cref, https://docs.oracle.com/javame/dev-tools/jme-sdk-3.0-win/html-helpset/z400008e37797.html, reference implementation or Java Card Platform Simulator
+
+
+Java Card applets are developed in the Java programming language. The applet source files can define one or more Java packages. A package is referred to as an applet package if it contains a subclass of \class{javacard.framework.Applet} (there can be more than one). It is called a library package otherwise.  Similarly to Java, the source code is compiled into class files using Java compiler. The class files produced can now be tested and debugged.
+
+Before the applet is downloaded to the target device the class files need to be converted using the JCC to a CAP (converted applet) file. 
+
+The CAP file format is the representation of Java Card application and can contain one or more applet and library packages. The CAP files consist of several different CAP components. Java Card Converter produces a ``CAP file'' (it uses the \texttt{.cap} file extension), but it is actually a Java Archive file (JAR) that comprises of the individual CAP components. Some of the CAP components are required and some are optional.
+
+The second input to the JCC after the class files are export files (EXP). Export files contain the name and linking information about the packages, that are imported in the applet's source code.
+Apart from creating CAP files JCC can also create export files for future conversions or Java Card Assembly (JCA) files. JCA is human-readable version of the applet's bytecode.
+
+Before the CAP file is downloaded to the target device an off-card verifier can be utilized to verify whether the file conforms to the specifications for a given SDK version. To load a converted CAP file onto a smart card we need a Card Acceptance Device (CAD; smart card reader). 
+
+Once a JavaCard is inserted into a reader we can use an installation tool (see~\ref{subsubsec:gpp}) to load the CAP file onto the device. The smart card itself has an installation program, which needs to follow the specifications in~\cite{jcspecs31download}.
+% FIXME the surroungding paragraphes!!
+
+There are three steps, that need to take place before the new applet can be used. The applet's CAP file needs to be loaded on the target device, than linked and finally the applets \mintinline{bash}{install(byte[], short, byte)} method is invoked (if the \texttt{install} method is not implemented then applet's objects cannot be created initialized~\cite{jcspecs31download}). After the installation JavaCard RE interacts with the applet mostly through the methods \texttt{select}, \texttt{process}, \texttt{deselect}, \texttt{uninstall}.
+
+% After all three steps proceed successfuly the applet is ready and can be used. In case of successful installation of an applet packgage the applet is made 
+
+Applets and packages are identified on card by their Application ID (AID) defined in ISO 7816-5~\cite{jcspecs31download}. AID value is concatenated from Registered Application Provider Identifier (RID) and Proprietary Application Identifier Extension (PIX)~\cite{globalplatform}. The communication with the applet is facilitated through Application Protocol Data Unit (APDU). The layout of general APDU command and response is in table~\ref{tab:apdu}.
+\begin{table}
+    % \begin{tabular}{lc}
+        % \begin{minipage}{.5\linewidth}
+        \hfill
+        \parbox{.45\linewidth}{
+        \centering
+            \begin{tabular}{@{}lllllll@{}}
+                \toprule
+                   \cla & \ins & \pone & \ptwo & \lc & \data & \len \\
+                \midrule
+                   1 & 1 & 1& 1& 1 & 00--\lc& 0-3 \\
+                \bottomrule
+            \end{tabular}
+            }
+        % \end{minipage} & 
+        % \begin{minipage}{.5\linewidth}
+        \hfill
+        \parbox{.45\linewidth}{
+        \centering
+        \begin{tabular}{@{}lll@{}}
+            \toprule
+                \data & \texttt{SW1} & \texttt{SW2}\footnotemark \\
+            \midrule
+                max \len & 1 & 1 \\
+            \bottomrule
+        \end{tabular}
+        }
+        % \end{minipage}
+        \caption{The general structure of APDU command on the left and APDU response on right~\cite{jcspecs31download}. The field names are in the top row and their length in the bottom one}
+        \label{tab:apdu}
+    % \end{tabular}
+\end{table}
+
+\footnotetext{ \texttt{SW1SW2} are called status word. The values of status words are defined in the \texttt{javacard.framework.ISO7816} package.}
+
+When CAD wants to interact with a particular applet it issues a special APDU containing the applets AID. JavaCard RE deselects (suspends) the currently selected applet by calling its \texttt{deselect} method and calls the \texttt{select} method of the applet that matches the AID. Further APDU payloads are then relayed to the applet through its \texttt{process} method. Finally, the \texttt{uninstall method is called when a APDU requesting deletion of the applet is received by JCRE.
+
+    The \cla field from~\ref{tab:apdu} is used to differentiate higher level functionality of the applet. The \ins field is used to trigger particular operation in the applet. The \texttt{process} method usually implementes a \texttt{switch} statement, that dispatches the \ins instructions to the respective methods. We will see the \ins field be used for communicating with the applets in POCs.
+
+    % \subsection{Development Cycle of a JavaCards}
+    % JavaCard technology is based upon the Java technology. Among other, Java gained its popularity thanks to the ability to run on multiple platforms. Java achieves platform independence with a middle layer of a Java Virtual Machine. Java source code is compiled into intermediate byte code, which is then executed by the virtual machine on the target device. Smart cards can be deceiving, because they look similar on the outside, however, they are produced by different manufactures. Therefore, smart card applications face the similar problem of platform independece as regular computer applications do. JavaCard technology uses similar approach to overcome this issue and achieve cross-platformity. JavaCard applications are not run by the smart card operating system, but by the JavaCard Virtual Machine (JCVM) instead. Similarly to Java, JavaCard application are compiled into JavaCard bytecode, which is then executed by JCVM.
+
+% FIXME
+% Communicating with the JavaCard applet.
+
+
+% FIXME As we will see in the chapter~\ref{chp:results}.
+
+% FIXME distinguish applet package and library package
+
+    % Before we present some of the research done in the field of attacks against JavaCards we will describe the platform itself.
+    % \subsection{What are JavaCards}
+        % Smart cards are pocket sized devices with an embedded microchip. JavaCard technology is 
+
+        % a form of smart card devices, that runs JavaCard Virtual Machine on top of the smart card operating system. Current smart cards have similar layout (TODO better word) as other computing devices, but its resources are much more limited. A typical smart card has 
+
+
+% FIXME Java Card technology allows multiple applications to be installed on the smart card at the same time. This introduces a risk of one application accessing (potentially secret) data of another application.
+
+
+
+    \section{Types of attacks and attacker models}
+
+    As we will see in the list of related work~\ref{sec:related-work} the previous research distinguishes three main attack categories --- physical attacks, logical attacks and combined attacks. Physical attacks target the device physical components, such as CPU and memory, by for example shooting a laser beam at them. In \cite{Prpič2010thesis} the power traces caused by the power consumption due to the execution of the byte code instructions are stored and analyzed. A database of such traces can then be used to partially reverse engineer the instruction in future interception of power traces of unknown code execution.
+    Logical attacks like~\cite{hogenboom} target the software implementation of JavaCards and try to exploit bugs in the implementation of JCRE and JCVM (or even the card OS). Combined attacks combine physical and logical attacks. Physical disturbance might allow skipping an internal validation of malicious applet, which would otherwise be prevented from execution as in~\cite{barbusecond}.
+
+    % FIXME move elsewhere!!
+    % \subsection{The attacker model}
+
+        Because we are interested in attacks on the JavaCard platform we need to discuss the attacker model first. In general, the attacker model for the various attacks on JavaCards can differ. For physical attacks the attacker usually to have the targetted JavaCard in a long-term possession and may or may not need to be able to install additional applications on the JavaCard and to communicate with the card. For logical attacks, the attacker often needs to be able to install additional applications on the target device and then communicate with it (this might not require physical access to the JavaCard as demonstrated in~\cite{se:gemalto:part}). For combined attacks (the combination of the two previous) the adversary will probably need both the long-term access to the card and ability to install applets on it.
+        In the second chapter we present the JavaCard Vulnerability Scanner, this tool currently supports multiple logical attacks and for each one of them the attacker model is the same. The adversary needs to be in the possession of the targed JavaCard, have the ability to install additional applets and issue APDU commands to it afterwards.
+
+        % Smart card platform allows for multiple different attacker models. The goal of the attacker can be to retrieve secret information, or alter information on the card or maybe to block the card from functioning. There are three main categories of attacks against smart cards.
+    % \subsection{Physical attacks}
+        % Those attacks can be in general carried out agains any type of smart cards, they are not JavaCard specific. In general a common attack vector against any device is to interact with the given device in a manner it was not intended (or even thought of) by its creators. Similarly, physical attacks against smart cards abuse a smart card physical interface. One of the simplest attacks against contact smart cards is to intercept the communication between the smart card and the reader. First thing is to extend the reader with a dummy smart card, that is wired to a new reader slot. All communication will now pass through the wires, that are easily accessible. Smart cards don't have their own power source, instead they get a power from the reader (from power supply pin in case of cards with contacts, for contact-less cards it is more difficult). By using another external chip we can hook to the I/O wire and to the power supply one. The second chip listens on the I/O line and once it intercepts a communication, imagine a Personal Identification Number (PIN) being transmitted, it can alter the voltage on the power supply wire, which can maliciously affect the cards behaviour. Such a basic attack is quite naïve and fragile in the sense, that e.g.\ skipping particular check (the PIN validation) on the card is very difficult. However, the attack is not resource intensive. The author himself tested the attack with no interesting results, as the card always detected the voltage change and stopped its operation for several minutes.
+
+        % More elaborate attack is to use oscilloscope and eavesdrope on one of the chosen wires. In~\ref{Reverse engineering of Java Card applets} was shown, how the underlying bytecode instructions, that are executed can be inferred from the powertrace.
+
+        % Currently, the physical attacks feature much more elaborate setups, where particular regions of the memory of the card can be targetted with e.g.\ lasers, which can lead to a change of values in the memory (those changes can be done on the level of individual bytes/bits). If the attacker then knows where to hit, he might be able to change for example \texttt{0x00} byte into \texttt{0xff}, which might lead to passing some if condition, that would otherwise fail.
+
+        % Physical attacks yield promising results, but due to their complexity and resource requirements we cannot include them in the testing framework. For this reason those attacks won't be discussed further in this text.
+        % TODO over si, ze to jde i na bit
+        % TODO ref https://is.muni.cz/th/gkgiy/bc.pdf
+
+    % \subsection{Logical attacks}
+        
+    % \subsection{Combined attacks}
+
+    %     physical, logical, combined
+    % % \subsection{Types of attacks}
+        
+    \section{JavaCard defensive mechanisms}
+
+    Java Card technology is build to be used in secure elements such as smart cards. Therefore it is natural, that several defensive mechanisms are in place to attempt to stop the attacker from misusing the devices to for example obtain information, that should be kept secret.
+
+The techniques we are about to described are software based. However, smart cards need also to be tamper resistant, because several techniques can be utilized to compromise its security as described in~\cite{kommerling}.
+        % Smart cards in general are developed to be used in situation, where security is an important if not the most important requirement. They are used in banking industry, person identification (national ID cards, passports)  or for example as access tokens to buildings. Due to those reasons it is obvious, that mechanisms defending the secret information (such as private keys used in Public Key Infrastructures) stored on those cards need to defended well against various attack vectors.
+
+% \section{Defensive Measures Against the Attacks}
+    % \subsection{The Compiler}
+
+% The Java compiler is used to compile the Java Card source files into the class files. 
+    \subsection{The off-card bytecode verifier}
+
+% FIXME cite SDK
+The various Java Card SDKs are equiped with tools used for off-card verifications of the CAP, EXP and JCA files~\cite{jcoffcardverifier}. After the CAP file conversion the off-card verification can take place. The internal integrity of the CAP file and the associated export files is verified according to the JCVM specifications~\cite{jcspecs31download}.
+
+    \subsection{The on-card bytecode verifier}
+
+    If the off-card byte code verification is not enforced a malicious CAP file can be created and later loaded onto a card. It is then up to the card, whether it will accept or reject such CAP file. As we will see in chapter~\cite{chp:results} the behaviour of JavaCards differ. Similar, discrepanies in the implementation of on-card installer and JavaCard RE are observed in~\cite{lanettrojan}. The on-card bytecode verification is mandatory for JavaCard 3.0 Connected Edition and higher~\cite{barbusecond}. 
+
+
+
+    \subsection{Applet Firewall}
+
+    JavaCard technology allows multiple applications to be installed alongside on a single devices~\cite{jcspecs31download}. To prevent the different applets to accidentaly (or malicious) access data of other applications the JCRE introduces in~\cite{jcspecs31download} Applet firewall. Different applets on JavaCard are assigned different spaces called contexts. The firewall acts as a boundary between those contexts. Each CAP file of an applet package is assigned its own context, library packages share the context of the creating applet instance. One CAP file can define multiple applets --- those will share the same contexts and can therefore access objects of each other. Applets from one context are denied by the firewall access to applets from a different context.
+
+    There is one special context assigned to the JavaCard RE. It possesses higher privileges and can access contexts of other applets. Sometimes the applets from different contexts do need to access objects, that reside in different context. Theses cases are covered by the following mechanisms --- JCRE Entry Points Objects, Sharing Arrays, JCRE privileges, Shareable Interfaces. An example of JCRE Entry Point Object is the APDU object, that implments the buffer used for I/O operations with the CAD.
+
+
+% FIXME
+% JCRE contexts, applets from the same package share the context
+
+\input{src/chapters/related-work}
+
