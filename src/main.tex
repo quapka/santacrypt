@@ -1,5 +1,115 @@
 \documentclass{../llncs/llncs}
 
+% \input{src/new_preamble.tex}
+\input{src/thesis_preamble.tex}
+
+% metadata information
+\input{src/metadata.tex}
+
 \begin{document}
-hello
+\maketitle
+
+\begin{abstract}
+    % FIXME simplify
+This paper investigates the state of the art security of JavaCards. Firstly, the JavaCard platform and its defensive mechanisms are described. Secondly, the author introduces several existing attacks against the JavaCard platform. Furthermore, the author remarks that with rising number of attacks it is increasingly more difficult to systematically test a real JavaCard against all of them and assess the level of security of the JavaCard. Then a design and implementation of a new tool JavaCard Vulnerability Scanner created by the author is introduced, which presents possible solution to the previous situation. This tool can automatically test the security of a real JavaCard against several of the previously presented attacks, moreover it is also extensible with other attacks in the future. Finally, results from the execution of JavaCard Vulnerability Scanner on several JavaCards are discussed.
+\keywords{JavaCard security analysis \and smartcard \and JavaCard Vulnerability Scanner \and javus}
+\end{abstract}
+
+
+% \import{src/sections/}{sec1-opening-chapter.tex}
+
+\section{Introduction}
+
+This text follows the structure of the master thesis Security analysis of JavaCard Virtual Machine~\cite{Kvapil2020thesis} defended by the author in September 2020. The text is mostly comprised of excerpts from the thesis. The reader is welcomed to read the thesis if he or she wishes to get more in-depth discussion of the various topics. The section~\ref{sec:fuzzing} is explained in a little bit more detail in here than in the original thesis.
+
+\section{State of the art of JavaCard security}
+JavaCard technology is based on the Java programming language and allows programs created in Java to be executed on secure devices such as smart cards. Similarly to Java, Java Card system is made up from multiple components such as Java Card Virtual Machine (JCVM), Java Card Runtime Environment (JCRE), Java Card Application Programming Interface (JCAPI) and additionally Java Card Convertor(JCC).  Smartcards are pocket sized devices with an embedded microchip. Smartcard's chip contains components such as CPU, RAM and ROM and non-volatile memory, known from other computing devices. However, the components inside a smartcard chip are much more limited in their capabilities. Typical size of a user RAM is around 12K. The size of non-volatile memory (that is a memory, that allows persistant data storage) is higher at around 16K and ROM is the biggest with 32-48K. Also, the computing power of a CPU inside a smart card is nowhere near the computing power of CPUs used in computers.
+
+Java Card technology is released in multiple versions, the newest one, at the time of writing this text is the version 3.1. The Java Card platform specifications can be accessed at~\cite{jcspecs31download}.
+%Since the version 3.0 Java Card platform was split into Classic and Connected editions. The Connected edition targets devices that have restricted resources, but are more powerful than conventional smart cards described above. If we refer in our work to a version of Java Card Platform higher than 3.0 we will mean the Classid Edition.
+
+% In our work we focus only on the Classic edition for the version 3.0 and newer of Java Card technology.
+
+Each JavaCard technology version is accompanied with a corresponding JavaCard Software Development Kit (SDK).
+% SDK equips JavaCard developers with the tools needed for the development of JavaCard programs.
+In the context of JavaCard platform the programs are called JavaCard applets. As we will show later in the text, the behaviour of an particular applet with respect to security can differ across the SDKs and smartcards it is installed on.
+Because JavaCards are not that powerful, they cannot make use of all the features of the Java programming langugage. For that reason, only a subset of Java is used for developing JavaCard programs.
+% Specifically, the JCVM supports only a subset of Java Virtual Machine. For example, JCVM does not support Security Manager class, threads or variable-length arguments. Furthermore, only some Java data types, like \texttt{boolean}, \texttt{byte}, \texttt{short}, \texttt{int} and Objects or arrays, are supported --- this implies that several byte code instructions for handling more complicated types are not supported (the complete subset is described in~\cite{jcspecs31download}).
+
+    \subsection{Applet lifetime}
+% Java Card applets are developed in the Java programming language.
+The applet source files can define one or more Java packages. A package is referred to as an applet package if it contains a subclass of \class{javacard.framework.Applet} (there can be more than one). It is called a library package otherwise.  Similarly to Java, the source code is compiled into class files using Java compiler. The class files produced can now be tested and debugged.
+
+Before the applet is downloaded to the target device the class files need to be converted using the JCC to a CAP (Converted APplet) file.
+
+The CAP file format is the off-card representation of JavaCard application and can contain one or more applet and library packages. The CAP files consist of several different CAP components. Java Card Converter produces a ``CAP file'' (it uses the \texttt{.cap} file extension), but it is actually a Java Archive file (JAR) that comprises of the individual CAP components. Some of the CAP components are required and some are optional.
+
+The second input to the JCC after the class files are export files (EXP). Export files contain the name and linking information about the packages that are imported in the applet's source code.
+Apart from creating CAP files JCC can also create export files for future conversions or Java Card Assembly (JCA) files. JCA is human-readable version of the applet's bytecode.
+
+Before the CAP file is downloaded to the target device an off-card verifier can be utilized to verify whether the file conforms to the specifications for a given SDK version. To load a converted CAP file onto a smart card we need a Card Acceptance Device (CAD; smart card reader).
+
+Once a JavaCard is inserted into a reader we can use an installation tool (see~\ref{subsubsec:gpp}) to load the CAP file onto the device. The smart card itself has an installation program, which needs to follow the specifications in~\cite{jcspecs31download}.
+% FIXME the surroungding paragraphes!!
+
+There are three steps that need to take place before the new applet can be used. The applet's CAP file needs to be loaded on the target device, than linked and finally the applets \mintinline{bash}{install(byte[], short, byte)} method is invoked (if the \texttt{install} method is not implemented then applet's objects cannot be created and initialized~\cite{jcspecs31download}). After the installation JavaCard RE interacts with the applet mostly through the methods \texttt{select}, \texttt{process}, \texttt{deselect}, \texttt{uninstall}.
+
+% After all three steps proceed successfuly the applet is ready and can be used. In case of successful installation of an applet packgage the applet is made
+
+Applets and packages are identified on card by their Application ID (AID) defined in ISO 7816-5~\cite{jcspecs31download}. AID value is concatenated from Registered Application Provider Identifier (RID) and Proprietary Application Identifier Extension (PIX)~\cite{globalplatform}. The communication with the applet is facilitated through Application Protocol Data Unit (APDU). The layout of general APDU command and response is in table~\ref{tab:apdu}.
+
+\begin{table}
+    % \begin{tabular}{lc}
+        % \begin{minipage}{.5\linewidth}
+        \hfill
+        \parbox{.45\linewidth}{
+        \centering
+            \begin{tabular}{@{}lllllll@{}}
+                \toprule
+                   \cla & \ins & \pone & \ptwo & \lc & \data & \len \\
+                \midrule
+                   1 & 1 & 1& 1& 1 & 00--\lc& 0--3 \\
+                \bottomrule
+            \end{tabular}
+            }
+        % \end{minipage} &
+        % \begin{minipage}{.5\linewidth}
+        \hfill
+        \parbox{.45\linewidth}{
+        \centering
+        \begin{tabular}{@{}lll@{}}
+            \toprule
+                \data & \texttt{SW1} & \texttt{SW2}\footnotemark \\
+            \midrule
+                max \len & 1 & 1 \\
+            \bottomrule
+        \end{tabular}
+        }
+        % \end{minipage}
+        \caption{The general structure of APDU command on the left and APDU response on right~\cite{jcspecs31download}. The field names are in the top row and their length in the bottom one.}
+        \label{tab:apdu}
+    % \end{tabular}
+\end{table}
+
+\footnotetext{\texttt{SW1SW2} are called status word. The values of status words are defined in the \texttt{javacard.framework.ISO7816} package.}
+
+When CAD wants to interact with a particular applet, it issues a special APDU containing the applets AID. JavaCard RE deselects (suspends) the currently selected applet by calling its \texttt{deselect} method and calls the \texttt{select} method of the applet that matches the AID. Further APDU payloads are then relayed to the applet through its \texttt{process} method. Finally, the \texttt{uninstall} method is called when a APDU requesting deletion of the applet is received by JCRE.
+
+    The \cla field from~\ref{tab:apdu} is used to differentiate higher level functionality of the applet. The \ins field is used to trigger particular operation in the applet. The \texttt{process} method usually implementes a \texttt{switch} statement that dispatches the \ins instructions to the respective methods. We will see the \ins field be used for communicating with the applets in POCs.
+
+    \subsection{Defensive mechanisms}
+    \subsection{Existing attacks}
+
+\section{JavaCard Vulnerability Scanner}
+    \subsection{Design}
+
+\section{Fuzzing of JavaCards\label{sec:fuzzing}}
+    \subsection{Crashcourse in fuzzing}
+    \subsection{Fuzzing of JavaCards}
+    % \subsection{Fuzzing of \cref}
+
+\section{Practical results}
+    \subsection{Results of the individual attacks}
+
+
 \end{document}
