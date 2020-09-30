@@ -1,0 +1,270 @@
+%% The preamble
+\usepackage[english]{babel} % Babel
+\usepackage{import}
+
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+
+\usepackage{underscore}
+\usepackage{caption}
+
+
+\usepackage{rotating}
+
+% \usepackage{amssymb}
+\usepackage{pifont}
+
+\usepackage{wasysym}
+\usepackage{bm}
+\let\mathbf\relax
+
+% \newcommand{\passmark}{\ding{51}}%
+% \newcommand{\failmark}{\ding{55}}%
+% \newcommand{\skipmark}{$\circ$}%
+% \newcommand{\missmark}{$\bm{\circ}$}%
+% \newcommand{\missmarkx}{$\bm{\ocircle}$}%
+
+\usepackage{xcolor}
+\definecolor{greeny}{RGB}{0,128, 0}
+\definecolor{redy}{RGB}{255,0, 0}
+\definecolor{bluey}{RGB}{0,0,255}
+\newcommand{\passmark}{{\color{greeny}\ding{51}}}%
+\newcommand{\failmark}{{\color{red}\ding{55}}}%
+\newcommand{\skipmark}{{\color{blue}$\circ$}}%
+\newcommand{\missmark}{$\bm{\circ}$}%
+\newcommand{\missmarkx}{$\bm{\ocircle}$}%
+% FIXME different way of naming the cards?
+\newcommand{\Acard}{A\xspace} % A and A new merged together
+\newcommand{\Bcard}{B\xspace}
+\newcommand{\Ccard}{C\xspace}
+\newcommand{\Cnewcard}{C*\xspace}
+\newcommand{\Dcard}{D\xspace}
+\newcommand{\Ecard}{E\xspace}
+\newcommand{\Fcard}{F\xspace}
+\newcommand{\Gcard}{G\xspace}
+\newcommand{\Hcard}{H\xspace}
+\newcommand{\Icard}{I\xspace}
+\newcommand{\Inewcard}{I*\xspace}
+\newcommand{\Jcard}{J\xspace}
+\newcommand{\vulnscap}{\mintinline[breaklines,breakafter=.]{python}{vulns.new.cap}\xspace}
+\newcommand{\vulnscaporig}{\mintinline[breaklines,breakafter=.]{python}{vulns.cap}\xspace}
+
+\newcommand{\appletscap}{\mintinline[breaklines,breakafter=.]{python}{applets.cap}\xspace}
+\newcommand{\transactionconfusioncap}{\mintinline[breaklines,breakafter=_]{python}{transaction_confusion.cap}\xspace}
+
+\newcommand{\scardenottransacted}{\mintinline[breaklines,breakafter=_]{python}{SCARD_E_NOT_TRANSACTED}\xspace}
+\newcommand{\scardwunpoweredcard}{\mintinline[breaklines,breakafter=_]{python}{SCARD_W_UNPOWERED_CARD}\xspace}
+\newcommand{\scardwunresponsivecard}{\mintinline[breaklines,breakafter=_]{python}{SCARD_W_UNRESPONSIVE_CARD}\xspace}
+
+\newcommand{\jerror}{\mintinline[breaklines,breakafter=_]{python}{0x6438}\xspace}
+
+\newcommand*\rot{\rotatebox{90}}
+% fixing labelling enum items
+\usepackage{xparse}
+\let\realItem\item % save a copy of the original item
+\makeatletter
+\NewDocumentCommand\myItem{ o }{%
+   \IfNoValueTF{#1}%
+      {\realItem}% add an item
+      {\realItem[#1]\def\@currentlabel{#1}}% add an item and update label
+}
+\makeatother
+
+
+\usepackage{enumitem}    
+\setlist[enumerate]{
+    before=\let\item\myItem,       % use \myItem in enumerate
+    label=\textnormal{(\arabic*)}, % format the label
+    % widest=(2')                    % set the widest label
+}
+
+\newcommand{\baloadbastore}{\mintinline[breaklines, breakafter=_]{python}{baload_bastore}\xspace}
+\newcommand{\baload}{\mintinline[breaklines, breakafter=_]{python}{baload}\xspace}
+\newcommand{\bastore}{\mintinline[breaklines, breakafter=_]{python}{bastore}\xspace}
+
+
+\newcommand{\cla}{\mintinline{python}{CLA}\xspace}
+\newcommand{\ins}{\mintinline{python}{INS}\xspace}
+\newcommand{\pone}{\mintinline{python}{P1}\xspace}
+\newcommand{\ptwo}{\mintinline{python}{P2}\xspace}
+\newcommand{\lc}{\mintinline{python}{Lc}\xspace}
+\newcommand{\data}{\mintinline{python}{Data}\xspace}
+\newcommand{\len}{\mintinline{python}{Le}\xspace}
+
+\newcommand{\getstatic}{\mintinline[breaklines, breakafter=_]{python}{getstatic_<T>}\xspace}
+\newcommand{\putstatic}{\mintinline[breaklines, breakafter=_]{python}{putstatic_<T>}\xspace}
+
+\newcommand{\getfield}{\mintinline[breaklines, breakafter=_]{python}{getfield_a}\xspace}
+
+\newcommand{\prepareone}{\mintinline[breaklines,breakafter=_]{python}{INS_PREPARE1}\xspace}
+\newcommand{\preparetwo}{\mintinline[breaklines,breakafter=_]{python}{INS_PREPARE2}\xspace}
+\newcommand{\insreadmem}{\mintinline[breaklines,breakafter=_]{python}{INS_READMEM}\xspace}
+
+\newcommand{\ping}{\mintinline[breaklines,breakafter=_]{python}{PING}\xspace}
+\newcommand{\status}{\mintinline[breaklines,breakafter=_]{python}{STATUS}\xspace}
+\newcommand{\setup}{\mintinline[breaklines,breakafter=_]{python}{SETUP}\xspace}
+\newcommand{\readmem}{\mintinline[breaklines,breakafter=_]{python}{READ_MEM}\xspace}
+\newcommand{\writemem}{\mintinline[breaklines, breakafter]{python}{WRITE_MEM}\xspace}
+\newcommand{\cleanup}{\mintinline[breaklines,breakafter=_]{python}{CLEANUP}\xspace}
+
+\newcommand{\triggerswapx}{\mintinline[breaklines,breakafter=_]{python}{TRIGGER_SWAPX}\xspace}
+
+\newcommand{\nreadshort}{\mintinline[breaklines,breakafter=_]{python}{NREAD_SHORT}\xspace}
+\newcommand{\nwriteshort}{\mintinline[breaklines,breakafter=_]{python}{NWRITE_SHORT}\xspace}
+
+\newcommand{\getfieldins}{\mintinline[breaklines,breakafter=_]{python}{GETFIELD_<T>}\xspace}
+\newcommand{\putfieldins}{\mintinline[breaklines,breakafter=_]{python}{PUTFIELD_<T>}\xspace}
+
+\newcommand{\getstaticins}{\mintinline[breaklines,breakafter=_]{python}{GET_STATIC}\xspace}
+
+\newcommand{\byte}{\mintinline[breaklines, breakafter=_]{python}{byte}\xspace}
+
+\newcommand{\arraycopy}{\mintinline[breaklines, breakafter=_]{python}{arraycopy}\xspace}
+\newcommand{\setShort}{\mintinline[breaklines, breakafter=_]{python}{setShort}\xspace}
+\newcommand{\setInt}{\mintinline[breaklines, breakafter=_]{python}{setInt}\xspace}
+\newcommand{\arrayFill}{\mintinline[breaklines, breakafter=_]{python}{arrayFill}\xspace}
+\newcommand{\arrayFillNonAtomic}{\mintinline[breaklines, breakafter=_]{python}{arrayFillNonAtomic}\xspace}
+
+\newcommand{\arrayCopy}{\mintinline[breaklines, breakafter=_]{python}{arrayCopy}\xspace}
+\newcommand{\arrayCopyNonAtomic}{\mintinline[breaklines, breakafter=_]{python}{arrayCopyNonAtomic}\xspace}
+
+\newcommand{\arrayops}{\mintinline[breaklines, breakafter=_]{python}{arrayops}\xspace}
+\newcommand{\staticfieldref}{\mintinline[breaklines, breakafter=_]{python}{staticfield_ref}\xspace}
+\newcommand{\referencelocation}{\mintinline[breaklines, breakafter=_]{python}{referencelocation}\xspace}
+\newcommand{\swapx}{\mintinline[breaklines, breakafter=_]{python}{swap_x}\xspace}
+\newcommand{\nativemethod}{\mintinline[breaklines, breakafter=_]{python}{nativemethod}\xspace}
+
+% classes
+\newcommand{\builderclass}{\mintinline[breaklines,breakafter=.,breakbefore=BA]{python}{javus.builder.BaseAttackBuilder}\xspace}
+\newcommand{\shortbuilderclass}{\mintinline[breaklines,breakbefore=AB]{python}{BaseAttackBuilder}\xspace}
+\newcommand{\attackbuilder}{\mintinline[breaklines,breakbefore=B]{python}{AttackBuilder}\xspace}
+
+\newcommand{\executorclass}{\mintinline[breaklines,breakbefore=BE]{python}{javus.executor.BaseExecutorBuilder}\xspace}
+\newcommand{\shortexecutorclass}{\mintinline[breaklines,breakbefore=BE]{python}{BaseExecutorBuilder}\xspace}
+\newcommand{\attackexecutor}{\mintinline[breaklines,breakbefore=AB]{python}{AttackExecutor}\xspace}
+
+\newcommand{\appclass}{\mintinline[breaklines,breakafter=.]{python}{javus.analyzer.App}\xspace}
+\newcommand{\shortappclass}{\mintinline{python}{App}\xspace}
+
+\usepackage{algpseudocode}
+\usepackage{algorithm}
+% \usepackage[ruled,vlined]{algorithm2e}
+
+\usepackage{booktabs}
+
+\usepackage{algorithm}
+% \lstset{
+%   mathescape = true,
+%   basicstyle = \ttfamily}
+% \newcommand{\dollar}{\mbox{\textdollar}}
+
+% \lstdefinestyle{}
+% {
+    % numberblanklines=false,
+    % language=shell,
+    % tabsize=4,
+    % keywordstyle=\color{red},
+    % identifierstyle= %plain identifiers for make
+% }
+
+%\lstinputlisting[
+%    inputencoding=latin1, 
+%    firstline=1, 
+%    %lastline=10,
+%    caption={[Makefile]Makefile, foobar},
+%    style=makefile
+%]{./src/makefile}
+
+\usepackage{svg}
+\newcommand{\javusdev}{\mintinline{bash}{javusdev}\xspace}
+\newcommand{\javus}{\mintinline{bash}{javus}\xspace}
+\newcommand{\javusrun}{\mintinline{bash}{javus run}\xspace}
+\newcommand{\javusweb}{\mintinline{bash}{javus web}\xspace}
+\newcommand{\javuslist}{\mintinline{bash}{javus list}\xspace}
+\newcommand{\javusvalidate}{\mintinline{bash}{javus validate}\xspace}
+\newcommand{\jcmvanalysis}{\mintinline[breaklines,breakafter=-]{python}{javus}\xspace}
+\newcommand{\ant}{\texttt{ant}\xspace}
+\newcommand{\petr}{Petr Švenda\xspace}
+
+\newcommand{\projectroot}{\mintinline[breaklines,breakafter=-]{python}{javus}\xspace}
+\newcommand{\install}{\mintinline{bash}{install}\xspace}
+\newcommand{\send}{\mintinline{bash}{send}\xspace}
+\newcommand{\uninstall}{\mintinline{bash}{uninstall}\xspace}
+
+\newcommand{\projectname}{JavaCard Vulnerability Scanner\xspace}
+
+\newcommand{\scenario}{\mintinline{python}{Scenario}\xspace}
+
+\newcommand{\stageinstall}{\mintinline{python}{_install}\xspace}
+\newcommand{\stagesend}{\mintinline{python}{_send}\xspace}
+\newcommand{\stageuninstall}{\mintinline{python}{_uninstall}\xspace}
+
+\newcommand{\selectable}{\mintinline{python}{SELECT}able\xspace}
+
+\newcommand{\examplemodule}{\mintinline[breaklines,breakafter=_]{python}{example_attack.py}\xspace}
+
+% TODO publish the project and add the url!
+% \newcommand{\gitlaburl}{\url{https://gitlab.com/quapka/javus}}
+\newcommand{\githuburl}{https://github.com/quapka/javus.git}
+% TODO fix the minted environements, see projects/sandbox/latex/mint-caption
+
+\newcommand{\finalcommit}{TODO HASH OF THE FINAL COMMIT}
+
+% \input{src/metadata.tex}
+\input{src/jc-framework-iso7816.tex}
+
+% \usepackage{listing}
+\usepackage[outputdir=build]{minted}
+\newcommand{\filepath}[1]{\mintinline[breakanywhere,breaklines=true,breakafter=./-]{python}{#1}}
+\newcommand{\class}[1]{\mintinline[breakanywhere,breaklines=true,breakafter=.]{python}{#1}}
+
+\newcommand{\constantstaticfieldref}{\mintinline[breaklines,breakafter=_]{python}{CONSTANT_StaticFieldref_info.offset}\xspace}
+
+% break lines in \mintinline commands
+% \setmintedinline{breakafter=.}
+
+% \newcommand{\PYZdl}{\textdollar}
+\usepackage{xspace}
+
+% TODO how to typeset undescores!
+
+\hyphenation{APDU}
+\hyphenation{APDUs}
+
+\hyphenation{SDK}
+\hyphenation{SDKs}
+
+\hyphenation{CAP}
+\hyphenation{CAPs}
+
+% \newcommand{\unsuccessful}{(un)suc\discretionary{-}{}cessful}
+\hyphenation{suc-cess-ful}
+\hyphenation{sta-ges}
+
+\hyphenation{Java-Card}
+\hyphenation{Java-Cards}
+\hyphenation{app-let}
+\hyphenation{Un-for-tu-na-te-ly}
+\hyphenation{au-to-ma-ti-ca-lly}
+
+\hyphenation{straight-for-ward}
+
+% \setlength{\tabcolsep}{20pt}
+% \renewcommand{\arraystretch}{1.5}
+
+\newlength{\oldtabcolsep}
+\setlength{\oldtabcolsep}{\tabcolsep}
+
+\newlength{\oldfloatsep}
+\setlength{\oldfloatsep}{\floatsep}
+% \newlength{\oldarraystretch}
+% \setlength{\oldarraystretch}{\arraystretch}
+% \setlength{\parindent}{2em}
+
+% \oldtabcolsep{\tabcolsep}
+% \oldarraystretch{\arraystretch}
+% \setlength{\myparindent}{\parindent}
+% \setlength{\parindent}{2em}
+
+%restore original
+% \setlength{\parindent}{\myparindent}
