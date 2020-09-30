@@ -15,9 +15,10 @@ proposal:
 	$(TEX) $(FLAGS) $(SRC_DIR)/main.tex
 
 # FIXME missing bcf file
-proposal-release:
+proposal-release: clean
 	$(TEX) $(FLAGS) $(SRC_DIR)/main.tex
-	biber $(BUILD_DIR)/$(basename $(TARGET)).bcf
+	# biber $(BUILD_DIR)/$(basename $(TARGET)).bcf
+	bibtex $(BUILD_DIR)/$(basename $(TARGET)).aux
 	$(TEX) $(FLAGS) $(SRC_DIR)/main.tex
 	$(TEX) $(FLAGS) $(SRC_DIR)/main.tex
 

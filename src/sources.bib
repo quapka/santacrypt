@@ -1,0 +1,405 @@
+@MastersThesis{Kvapil2020thesis,
+AUTHOR = "KVAPIL, Jan",
+TITLE = "Security analysis of JavaCard Virtual Machine [online]",
+YEAR = "2020 [cit. 2020-09-30]",
+TYPE = "Master's thesis",
+SCHOOL = "Masaryk University, Faculty of Informatics, Brno",
+SUPERVISOR = "Petr Švenda",
+URL = "Available from WWW <https://is.muni.cz/th/epktq/>",
+}
+
+
+@InProceedings{barbufirst,
+    author="Barbu, Guillaume
+    and Thiebeauld, Hugues
+    and Guerin, Vincent",
+    editor="Gollmann, Dieter
+    and Lanet, Jean-Louis
+    and Iguchi-Cartigny, Julien",
+    title="Attacks on Java Card 3.0 Combining Fault and Logical Attacks",
+    booktitle="Smart Card Research and Advanced Application",
+    year="2010",
+    publisher="Springer Berlin Heidelberg",
+    address="Berlin, Heidelberg",
+    pages="148--163",
+    abstract="Java Cards have been threatened so far by attacks using ill-formed applications which assume that the application bytecode is not verified. This assumption remained realistic as long as the bytecode verifier was commonly executed off-card and could thus be bypassed. Nevertheless it can no longer be applied to the Java Card 3 Connected Edition context where the bytecode verification is necessarily performed on-card. Therefore Java Card 3 Connected Edition seems to be immune against this kind of attacks. In this paper, we demonstrate that running ill-formed application does not necessarily mean loading and installing ill-formed application. For that purpose, we introduce a brand new kind of attack which combines fault injection and logical tampering. By these means, we describe two case studies taking place in the new Java Card 3 context. The first one shows how ill-formed applications can still be introduced and executed despite the on-card bytecode verifier. The second example leads to the modification of any method already installed on the card into any malicious bytecode. Finally we successfully mount these attacks on a recent device, emphasizing the necessity of taking into account these new threats when implementing Java Card 3 features.",
+    isbn="978-3-642-12510-2"
+}
+
+@InProceedings{barbusecond,
+author="Barbu, Guillaume
+and Duc, Guillaume
+and Hoogvorst, Philippe",
+editor="Prouff, Emmanuel",
+title="Java Card Operand Stack: Fault Attacks, Combined Attacks and Countermeasures",
+booktitle="Smart Card Research and Advanced Applications",
+year="2011",
+publisher="Springer Berlin Heidelberg",
+address="Berlin, Heidelberg",
+pages="297--313",
+abstract="Until 2009, Java Cards have been mainly threatened by Logical Attacks based on ill-formed applications. The publication of the Java Card 3.0 Connected Edition specifications and their mandatory on-card byte code verification may have then lead to the end of software-based attacks against such platforms. However, the introduction in the Java Card field of Fault Attacks, well-known from the cryptologist community, has proven this conclusion wrong. Actually, the idea of combining Fault Attacks and Logical Attacks to tamper with Java Cards appears as an even more dangerous threat. Although the operand stack is a fundamental element of all Java Card Virtual Machines, the potential consequences of a physical perturbation of this element has never been studied so far. In this article, we explore this path by presenting both Fault Attacks and Combined Attacks taking advantage of an alteration of the operand stack. In addition, we provide experimental results proving the practical feasibility of these attacks and illustrating their efficiency. Finally, we describe different approaches to protect the operand stack's integrity and compare their cost with a particular interest on the time factor.",
+isbn="978-3-642-27257-8"
+}
+
+
+@article{lanettrojan,
+    author = {Iguchi-Cartigny, Julien and Lanet, Jean-Louis},
+    year = {2010},
+    month = {11},
+    pages = {343-351},
+    title = {Developing a trojan applet in a Smart Card},
+    volume = {6},
+    journal = {Journal in Computer Virology},
+    doi = {10.1007/s11416-009-0135-3}
+}
+
+@TECHREPORT{Mostowski07testingthe,
+    author = {Wojciech Mostowski and Erik Poll},
+    title = {Testing the Java Card Applet Firewall},
+    institution = {Radboud University Nijmegen},
+    year = {2007}
+}
+
+@InProceedings{oncardleroy,
+author="Leroy, Xavier",
+editor="Attali, Isabelle
+and Jensen, Thomas",
+title="On-Card Bytecode Verification for Java Card",
+booktitle="Smart Card Programming and Security",
+year="2001",
+publisher="Springer Berlin Heidelberg",
+address="Berlin, Heidelberg",
+pages="150--164",
+abstract="This paper presents a novel approach to the problem of bytecode verification for Java Card applets. Owing to its low memory requirements, our verification algorithm is the first that can be embedded on a smart card, thus increasing tremendously the security of post-issuance downloading of applets on Java Cards.",
+isbn="978-3-540-45418-2"
+}
+
+
+@ONLINE{firewalltester,
+  publisher = {Wojciech Mostowski},
+  title     = {Java Card Firewall Tester},
+  date      = {2007},
+  url       = {https://www.sos.cs.ru.nl/applications/smartcards/firewalltester/},
+  urldate   = {2020-07-17},
+  location  = {Nijmegen},
+  langid    = {english}
+}
+
+@ONLINE{jcspecs31download,
+  publisher = {Oracle America, Inc.},
+  title     = {JAVA CARD CLASSIC PLATFORM SPECIFICATION 3.1},
+  date      = {2020},
+  url       = {https://www.oracle.com/java/technologies/javacard-downloads.html},
+  urldate   = {2020-07-17},
+  location  = {},
+  langid    = {english}
+}
+
+@ONLINE{jcsdkdownload,
+  publisher = {Oracle America, Inc.},
+  title     = {JAVA CARD DEVELOPMENT KIT},
+  date      = {2020},
+  url       = {https://www.oracle.com/java/technologies/javacard-sdk-downloads.html},
+  urldate   = {2020-07-17},
+  location  = {},
+  langid    = {english}
+}
+
+
+@ONLINE{jcoffcardverifier,
+  publisher = {Oracle America, Inc.},
+  title     = {Java Card 3 Platform Development Kit User Guide, Classic Edition},
+  date      = {2018},
+  url       = {https://docs.oracle.com/javacard/3.0.5/guide/JCUGC.pdf},
+  urldate   = {2020-07-17},
+  location  = {},
+  langid    = {english}
+}
+
+
+
+@ONLINE{jcvmconnected,
+  publisher = {Oracle America, Inc.},
+  title     = {Virtual Machine Specification, Java Card Platform, v3.0.1, Connected Edition},
+  date      = {May 2009},
+  url       = {https://www.oracle.com/java/technologies/java-archive-downloads-javame-downloads.html#java_card_kit-3.0.1-rr-spec-oth-JPR},
+  urldate   = {2020-07-17},
+  location  = {},
+  langid    = {english}
+}
+
+@ONLINE{oraclehome,
+  publisher = {Oracle America, Inc.},
+  title     = {Java Card},
+  date      = {2020},
+  url       = {https://www.oracle.com/java/java-card.html},
+  urldate   = {2020-07-16},
+  location  = {},
+  langid    = {english}
+}
+
+@article{hogenboom,
+    author = {Hogenboom, Jip and Mostowski, Wojciech},
+    year = {2009},
+    month = {01},
+    pages = {},
+    title = {Full Memory Read Attack on a Java Card}
+}
+
+
+@ONLINE{se:oracle:part1,
+  publisher = {Security Explorations},
+  title     = {Security vulnerabilities in Java Card, Issues 1--18},
+  date      = {2019},
+  url       = {http://www.security-explorations.com/materials/SE-2019-01-ORACLE.pdf},
+  urldate   = {2020-07-16},
+  location  = {Poznan},
+  langid    = {english}
+}
+
+
+
+@ONLINE{se:oracle:part2,
+  publisher = {Security Explorations},
+  title     = {Security vulnerabilities in Java Card, Issues 20--25},
+  date      = {2019},
+  url       = {http://www.security-explorations.com/materials/SE-2019-01-ORACLE-2.pdf},
+  urldate   = {2020-07-16},
+  location  = {Poznan},
+  langid    = {english}
+}
+
+@ONLINE{se:oracle:part3,
+  publisher = {Security Explorations},
+  title     = {Security vulnerabilities in Java Card, Issues 26--32},
+  date      = {2019},
+  url       = {http://www.security-explorations.com/materials/SE-2019-01-ORACLE-3.pdf},
+  urldate   = {2020-07-16},
+  location  = {Poznan},
+  langid    = {english}
+}
+
+@ONLINE{se:gemalto:part1,
+  publisher = {Security Explorations},
+  title     = {Security vulnerabilities in Java Card, Issues 19 and 33},
+  date      = {2019},
+  url       = {http://www.security-explorations.com/materials/SE-2019-01-GEMALTO.pdf},
+  urldate   = {2020-07-16},
+  location  = {Poznan},
+  langid    = {english}
+}
+
+@ONLINE{se:gemalto:part2,
+  publisher = {Security Explorations},
+  title     = {Security vulnerabilities in Java Card, Issue 34},
+  date      = {2019},
+  url       = {http://www.security-explorations.com/materials/SE-2019-01-GEMALTO-2.pdf},
+  urldate   = {2020-07-16},
+  location  = {Poznan},
+  langid    = {english}
+}
+
+@ONLINE{se:downloadpage,
+  publisher = {Security Explorations},
+  title     = {Security vulnerabilities in Java Card", Proof of Concept codes for Issues 1-18 and 20-32},
+  date      = {2019},
+  url       = {http://www.security-explorations.com/javacard_details.html},
+  urldate   = {2020-07-16},
+  location  = {Poznan},
+  langid    = {english}
+}
+
+@ONLINE{crocsweb,
+  publisher = {Centre for Research on Cryptography and Security},
+  title     = {Centre for Research on Cryptography and Security},
+  date      = {2020},
+  url       = {https://crocs.fi.muni.cz/},
+  urldate   = {2020-07-16},
+  location  = {Brno},
+  langid    = {english}
+}
+
+% FIXME add date
+@ONLINE{jcalgtest,
+  publisher = {Centre for Research on Cryptography and Security},
+  title     = {JavaCard Algorithm Test},
+  date      = {},
+  url       = {https://www.fi.muni.cz/~xsvenda/jcalgtest/index.html},
+  urldate   = {2020-07-16},
+  location  = {Brno},
+  langid    = {english}
+}
+
+% FIXME add date
+@ONLINE{ectester,
+  publisher = {Centre for Research on Cryptography and Security},
+  title     = {ECTester},
+  date      = {2019},
+  url       = {https://crocs-muni.github.io/ECTester/},
+  urldate   = {2020-07-16},
+  location  = {Brno},
+  langid    = {english}
+}
+
+
+
+@ONLINE{jcworkbench,
+  publisher = {Riscure},
+  title     = {JCworkBench Instruction Videos},
+  date      = {03/11/2015},
+  url       = {https://www.riscure.com/news/jcworkbench-instruction-videos/},
+  urldate   = {2020-07-16},
+  location  = {Delft},
+  langid    = {english}
+}
+
+@ONLINE{riscureweb,
+  publisher = {Riscure},
+  title     = {Outstanding security diagnostics and support - Riscure},
+  date      = {2019},
+  url       = {https://www.riscure.com/},
+  urldate   = {2020-07-16},
+  location  = {Delft},
+  langid    = {english}
+}
+
+
+@ONLINE{riscurejcworkbenchpdf,
+  publisher = {Riscure},
+  title     = {Risk mitigation for sensitive applets in a multi-application context},
+  date      = {2015},
+  url       = {https://www.riscure.com/uploads/2017/09/20150126-Risk-mitigation-for-sensitive-applets.pdf},
+  urldate   = {2020-07-16},
+  location  = {Delft},
+  langid    = {english}
+}
+
+@MASTERTHESIS{Prpic2010thesis,
+    author = "Prpič, Martin",
+    title = "Reverzní inženýrství JavaCard appletu prováděného na čipové kartě [online]",
+    year = {2010},
+    type = "Bakalářská práce",
+    school = "Masarykova univerzita, Fakulta informatiky, Brno",
+    supervisor = "Jiří Kůr",
+    url = "https://is.muni.cz/th/gkgiy/",
+}
+
+@MASTERSTHESIS{sergei,
+  author      = {Volokitin, Sergei},
+  title       = {Good, Bad and Ugly Design of Java Card Security},
+  year        = {2016},
+  school = {Radboud University, Faculty of Science, Nijmengen},
+  langid      = {english},
+}
+
+
+@inproceedings{kommerling,
+author = {K\"{o}mmerling, Oliver and Kuhn, Markus G.},
+title = {Design Principles for Tamper-Resistant Smartcard Processors},
+year = {1999},
+publisher = {USENIX Association},
+address = {USA},
+booktitle = {Proceedings of the USENIX Workshop on Smartcard Technology on USENIX Workshop on Smartcard Technology},
+pages = {2},
+numpages = {1},
+location = {Chicago, Illinois},
+series = {WOST’99}
+}
+
+@ONLINE{globalplatform,
+  publisher = {GlobalPlatform},
+  title     = {GlobalPlatform Card Specification Version 2.2.1},
+  date      = {January 2011},
+  url       = {https://globalplatform.org/},
+  urldate   = {2020-07-16},
+  location  = {},
+  langid    = {english}
+}
+
+
+
+@ONLINE{globalplatformpro,
+  publisher = {Paljak, Martin},
+  title     = {GlobalPlatformPro},
+  date      = {2020},
+  url       = {https://github.com/martinpaljak/GlobalPlatformPro},
+  urldate   = {2020-07-16},
+  location  = {},
+  langid    = {english}
+}
+
+
+@ONLINE{antjavacard,
+  publisher = {Paljak, Martin},
+  title     = {ant-javacard},
+  date      = {2020},
+  url       = {https://github.com/martinpaljak/ant-javacard},
+  urldate   = {2020-07-16},
+  location  = {},
+  langid    = {english}
+}
+
+
+@ONLINE{apacheant,
+  publisher = {The Apache Software Foundation},
+  title     = {The Apache Ant Project},
+  date      = {2020},
+  url       = {https://ant.apache.org/},
+  urldate   = {2020-07-16},
+  location  = {},
+  langid    = {english}
+}
+
+
+@ONLINE{oraclejavacardsdks,
+  publisher = {Paljak, Martin},
+  title     = {oracle_javacard_sdks},
+  date      = {2020},
+  url       = {https://github.com/martinpaljak/oracle_javacard_sdks},
+  urldate   = {2020-07-16},
+  location  = {},
+  langid    = {english}
+}
+
+
+@ONLINE{dockertoolbox,
+  publisher = {Docker, Inc.},
+  title     = {Install Docker Toolbox on Windows},
+  date      = {2020},
+  url       = {https://docs.docker.com/toolbox/toolbox_install_windows/},
+  urldate   = {2020-07-16},
+  location  = {},
+  langid    = {english}
+}
+
+@ONLINE{dockerforwindows,
+  publisher = {Docker, Inc.},
+  title     = {Get started with Docker for Windows},
+  date      = {2020},
+  url       = {https://docs.docker.com/docker-for-windows/},
+  urldate   = {2020-07-16},
+  location  = {},
+  langid    = {english}
+}
+
+
+@ONLINE{ossfuzz,
+  publisher = {},
+  title     = {OSS-Fuzz},
+  date      = {2020},
+  url       = {https://google.github.io/oss-fuzz/},
+  urldate   = {2020-07-16},
+  location  = {},
+  langid    = {english}
+}
+
+@ONLINE{radamsa,
+  publisher = {},
+  title     = {radamsa},
+  date      = {2020},
+  url       = {https://gitlab.com/akihe/radamsa},
+  urldate   = {2020-07-16},
+  location  = {},
+  langid    = {english}
+}
+
