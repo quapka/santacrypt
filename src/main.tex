@@ -53,7 +53,6 @@ Apart from creating CAP files JCC can also create export files for future conver
 Before the CAP file is downloaded to the target device an off-card verifier can be utilized to verify whether the file conforms to the specifications for a given SDK version. To load a converted CAP file onto a smartcard we need a Card Acceptance Device (CAD; smartcard reader).
 
 Once a JavaCard is inserted into a reader we can use an installation tool to load the CAP file onto the device. The smartcard itself has an installation program, which needs to follow the specifications in~\cite{jcspecs31download}.
-% FIXME the surroungding paragraphes!!
 
 There are three steps that need to take place before the new applet can be used. The applet's CAP file needs to be loaded on the target device, than linked and finally the applets \mintinline{bash}{install(byte[], short, byte)} method is invoked (if the \texttt{install} method is not implemented then applet's objects cannot be created and initialized~\cite{jcspecs31download}). After the installation JavaCard RE interacts with the applet mostly through the methods \texttt{select}, \texttt{process}, \texttt{deselect}, \texttt{uninstall}.
 
@@ -240,7 +239,7 @@ Naturally, a question arises: Is there even a need for a tool, that would test t
                         % , the expressions \textit{test run, analysis run} etc. are simply synonyms.
                 \end{enumerate}
 
-    \begin{figure}[htb!]
+    \begin{figure}[htb]
         \centering
         \includegraphics[width=.9\textwidth]{src/diagrams/full-design-new.png}
     \caption{High-level diagram of the run of the testing framework.} % The part with the dashed rectangle is visualized in more detail in the figure~\ref{fig:execute-attack-diagram}.}
@@ -269,7 +268,7 @@ Naturally, a question arises: Is there even a need for a tool, that would test t
 
     Eight attacks are currently included in the framework, however, new ones can be added. To do so the actual source code for the attack is needed alongside the different stages defined in a Python module file (see~\cite{anon2020thesis} for details). The framework uses Docker to achieve cross-platformity or can be invoked natively on Linux. The results of the individual runs can be viewed in a simple web application (see figure~\ref{fig:web-interface-pic}).
 
-    \begin{figure}[htb!]
+    \begin{figure}[htb]
         \centering
         \includegraphics[width=\textwidth]{src/imgs/web-app-all.png}
         \caption{Web interface that allows to filter the results on runs, attacks or cards.\label{fig:web-interface-pic}}
@@ -333,6 +332,7 @@ In this section we will utilize the attacks discussed in the section~\ref{sec:st
     }
     % \end{table}
 \end{table}
+
 \footnotetext{The symbol E is missing, because the card got blocked completely during the analysis and renaming could lead to the unwanted mix of the already obtained results.~GP stands for GlobalPlatform~\cite{globalplatform} and the number refers to the version of the specifications the card adheres to.}
 
     \subsection{Results of the individual attacks}
@@ -352,7 +352,7 @@ In this section we will utilize the attacks discussed in the section~\ref{sec:st
 \renewcommand{\arraystretch}{.20}
 \setlength{\floatsep}{0pt}
 
-\begin{table}[htb!]
+\begin{table}[htb]
     \captionsetup{font=footnotesize}
     \parbox[b][][b]{.45\linewidth}{
         \input{src/tables/subtables/best-arraycopy.tex}
@@ -519,7 +519,30 @@ In this section we will utilize the attacks discussed in the section~\ref{sec:st
         % % However, the attack was using type confusion and several new vulnerabilites exploiting slightly different type confusion on the level of bytecode instructions and API methods have been discovered recently (little more than a year ago~\cite{se:gemalto:part1, se:gemalto:part
 
 \newpage
-\bibliography{./src/sources.bib}
 \bibliographystyle{llncs/splncs04}
+\bibliography{./src/sources.bib}
+
+% example bibliography
+% \begin{thebibliography}{8}
+% \bibitem{ref_article1}
+% Author, F.: Article title. Journal \textbf{2}(5), 99--110 (2016)
+
+% \bibitem{ref_lncs1}
+% Author, F., Author, S.: Title of a proceedings paper. In: Editor,
+% F., Editor, S. (eds.) CONFERENCE 2016, LNCS, vol. 9999, pp. 1--13.
+% Springer, Heidelberg (2016). \doi{10.10007/1234567890}
+
+% \bibitem{ref_book1}
+% Author, F., Author, S., Author, T.: Book title. 2nd edn. Publisher,
+% Location (1999)
+
+% \bibitem{ref_proc1}
+% Author, A.-B.: Contribution title. In: 9th International Proceedings
+% on Proceedings, pp. 1--2. Publisher, Location (2010)
+
+% \bibitem{ref_url1}
+% LNCS Homepage, \url{http://www.springer.com/lncs}. Last accessed 4
+% Oct 2017
+% \end{thebibliography}
 
 \end{document}
