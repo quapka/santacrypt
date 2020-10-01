@@ -20,7 +20,7 @@ This text investigates the state of the art security of JavaCards. Firstly, the 
 
 \section{Introduction}
 
-This text was created to propose a talk for the Keymaker track at Mikulášská kryptobesídka 2020\footnote{Czech and Slovak crypto related conference, see \url{https://mkb.tns.cz/cfp.htm}.}. Let us hope that the current circumstances will allow it to happen. This text follows the structure of the master thesis Security analysis of JavaCard Virtual Machine~\cite{anon2020thesis} defended by the author in September 2020. The text is mostly comprised of excerpts from the thesis. The reader is welcomed to read the thesis if he or she wishes to get more in-depth discussion of the following topics.
+This text was created to propose a talk for the Keymaker track at  SantaCrypt2020\footnote{Czech and Slovak crypto related conference, see \url{https://mkb.tns.cz/cfp.htm}.}. Let us hope that the current circumstances will allow it to happen. This text follows the structure of the master's thesis Security analysis of JavaCard Virtual Machine~\cite{anon2020thesis} defended by the author in September 2020. The text is mostly comprised of excerpts from the thesis. The reader is welcomed to read the thesis if he or she wishes to get more in-depth discussion of the following topics.
 % The section~\ref{sec:fuzzing} is explained in a little bit more detail in here than in the original thesis.
 % TODO introduce each section
 
@@ -133,9 +133,9 @@ The various JavaCard SDKs are equiped with tools used for off-card verifications
     If the off-card bytecode verification is not enforced a malicious CAP file can be created and loaded onto a card. It is then up to the card to decide, whether it will accept or reject such CAP file. As we will see in section~\ref{chp:results} the behaviour of JavaCards differs. Similarly, discrepanies in the implementation of on-card installer and JavaCard RE are observed in~\cite{lanettrojan}. The on-card bytecode verification is mandatory for JavaCard 3.0 Connected Edition and higher~\cite{barbusecond}. As observed in the previous results and in our own, it is apparent that JavaCard manufacturers implement the on-card bytecode verifier (BCV) differently. The verification happens while the CAP file is loaded. The verification can comprise of checking that the different CAP file components are present and the references to export files are resolved properly to the objects on the card.
 
 
-    \subsubsection{Applet Firewall}
+    \subsubsection{Applet firewall}
 
-    JavaCard technology allows multiple applications to be installed alongside on a single devices~\cite{jcspecs31download}. To prevent the different applets to accidentaly (or maliciously) access data of other applications the JCRE introduces in~\cite{jcspecs31download} Applet firewall. Different applets on JavaCard are assigned different spaces called contexts. The firewall acts as a boundary between those contexts. Each CAP file of an applet package is assigned its own context, library packages share the context of the creating applet instance. One CAP file can define multiple applets --- those will share the same contexts and can therefore access objects of each other. Applets from one context are denied by the firewall access to applets from a different context.
+    JavaCard technology allows multiple applications to be installed alongside on a single devices~\cite{jcspecs31download}. To prevent the different applets to accidentaly (or maliciously) access data of other applications the JCRE introduces in Applet firewall~\cite{jcspecs31download}. Different applets on JavaCard are assigned different spaces called contexts. The firewall acts as a boundary between those contexts. Each CAP file of an applet package is assigned its own context, library packages share the context of the creating applet instance. One CAP file can define multiple applets --- those will share the same contexts and can therefore access objects of each other. Applets from one context are denied by the firewall access to applets from a different context.
     There is one special context assigned to the JavaCard RE. It possesses higher privileges and can access contexts of other applets.
     %Sometimes the applets from different contexts do need to access objects that reside in different context. Theses cases are covered by the following mechanisms --- JCRE Entry Points Objects, Sharing Arrays, JCRE privileges, Shareable Interfaces. An example of JCRE Entry Point Object is the APDU object that implments the buffer used for I/O operations with the CAD.
 
@@ -322,7 +322,7 @@ In this section we will utilize the attacks discussed in the section~\ref{sec:st
     }
     % \end{table}
 \end{table}
-\footnotetext{The symbol E is missing, because the card got blocked completely during the analysis and renaming could lead to the unwanted mix of the already obtained results. GP stands for GlobalPlatform~\cite{globalplatform} and the number refers to the version of the specifications the card adheres to.}
+\footnotetext{The symbol E is missing, because the card got blocked completely during the analysis and renaming could lead to the unwanted mix of the already obtained results.~GP stands for GlobalPlatform~\cite{globalplatform} and the number refers to the version of the specifications the card adheres to.}
 
     \subsection{Results of the individual attacks}
 
@@ -427,6 +427,7 @@ In this section we will utilize the attacks discussed in the section~\ref{sec:st
 
             % \import{src/tables/subtables}{best-arrayops.tex}
 
+            % FIXME use attack that had better results
             \subsection{\texttt{arrayops}}
             % TODO figure out, where is this frooom
             This attack can only be built for the 3.0.5u1--3.0.5u3 SDK versions. The results of the attack do differ across the range of the cards (see the table~\ref{tab:best-arrayops}), however, for fixed card the results don't differ across the SDKs.

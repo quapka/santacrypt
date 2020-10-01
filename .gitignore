@@ -21,3 +21,5 @@ build/
 svg-inkscape
 
 ignore/
+
+*@neomake*
