@@ -20,45 +20,48 @@ This text investigates the state of the art security of JavaCards. Firstly, the 
 
 \section{Introduction}
 
-This text was created to propose a talk for the Keymaker track at  SantaCrypt2020\footnote{Czech and Slovak crypto related conference, see \url{https://mkb.tns.cz/cfp.htm}.}. Let us hope that the current circumstances will allow it to happen. This text follows the structure of the master's thesis Security analysis of JavaCard Virtual Machine~\cite{anon2020thesis} defended by the author in September 2020. The text is mostly comprised of excerpts from the thesis. The reader is welcomed to read the thesis if he or she wishes to get more in-depth discussion of the following topics.
+This text was created to propose a talk for the Keymaker track at SantaCrypt2020\footnote{Czech and Slovak crypto related conference, see \url{https://mkb.tns.cz/cfp.htm}.}. Let us hope that the current circumstances will allow it to happen. This text follows the structure of the master's thesis Security analysis of JavaCard Virtual Machine~\cite{anon2020thesis} defended by the author in September 2020. The text is mostly comprised of excerpts from the thesis. The reader is welcomed to read the thesis if he or she wishes to get more in-depth discussion of the following topics.
 % The section~\ref{sec:fuzzing} is explained in a little bit more detail in here than in the original thesis.
 % TODO introduce each section
 
 \section{State of the art of JavaCard security\label{sec:state-of-the-art}}
-JavaCard technology is based on the Java programming language and allows programs created in Java to be executed on secure devices such as smartcards. Similarly to Java, Java Card system is made up from multiple components such as Java Card Virtual Machine (JCVM), Java Card Runtime Environment (JCRE), Java Card Application Programming Interface (JCAPI) and additionally Java Card Convertor(JCC).  Smartcards are pocket sized devices with an embedded microchip. Smartcard's chip contains components such as CPU, RAM and ROM and non-volatile memory, known from other computing devices. However, the components inside a smartcard chip are much more limited in their capabilities. Typical size of a user RAM is around 12K. The size of non-volatile memory (that is a memory, that allows persistant data storage) is higher at around 16K and ROM is the biggest with 32-48K. Also, the computing power of a CPU inside a smart card is nowhere near the computing power of CPUs used in computers.
+JavaCard technology is based on the Java programming language and allows programs created in Java to be executed on secure devices such as smartcards. Similarly to Java, JavaCard system is made up from multiple components such as JavaCard Virtual Machine (JCVM), JavaCard Runtime Environment (JCRE), JavaCard Application Programming Interface (JCAPI) and additionally JavaCard Convertor (JCC).  Smartcards are pocket sized devices with an embedded microchip. Smartcard's chip contains components such as CPU, RAM and ROM and non-volatile memory, known from other computing devices. However, the components inside a smartcard chip are much more limited in their capabilities. Typical size of a user RAM is around 12K. The size of non-volatile memory (that is a memory, that allows persistant data storage) is higher at around 16K and ROM is the biggest with 32-48K. Also, the computing power of a CPU inside a smartcard is nowhere near the computing power of CPUs used in computers.
 
-Java Card technology is released in multiple versions, the newest one, at the time of writing this text is the version 3.1. The Java Card platform specifications can be accessed at~\cite{jcspecs31download}.
-%Since the version 3.0 Java Card platform was split into Classic and Connected editions. The Connected edition targets devices that have restricted resources, but are more powerful than conventional smartcards described above. If we refer in our work to a version of Java Card Platform higher than 3.0 we will mean the Classid Edition.
+JavaCard technology is released in multiple versions. The newest one at the time of writing this text is the version 3.1. The JavaCard platform specifications can be accessed at~\cite{jcspecs31download}.
+%Since the version 3.0 JavaCard platform was split into Classic and Connected editions. The Connected edition targets devices that have restricted resources, but are more powerful than conventional smartcards described above. If we refer in our work to a version of JavaCard Platform higher than 3.0 we will mean the Classid Edition.
 
-% In our work we focus only on the Classic edition for the version 3.0 and newer of Java Card technology.
+% In our work we focus only on the Classic edition for the version 3.0 and newer of JavaCard technology.
 
 Each JavaCard technology version is accompanied with a corresponding JavaCard Software Development Kit (SDK).
 % SDK equips JavaCard developers with the tools needed for the development of JavaCard programs.
 In the context of JavaCard platform the programs are called JavaCard applets. As we will show later in the text, the behaviour of an particular applet with respect to security can differ across the SDKs and smartcards it is installed on.
-Because JavaCards are not that powerful, they cannot make use of all the features of the Java programming langugage. For that reason, only a subset of Java is used for developing JavaCard programs.
+% Because JavaCards are not that powerful, they cannot make use of all the features of the Java programming langugage. For that reason, only a subset of Java is used for developing JavaCard programs.
 % Specifically, the JCVM supports only a subset of Java Virtual Machine. For example, JCVM does not support Security Manager class, threads or variable-length arguments. Furthermore, only some Java data types, like \texttt{boolean}, \texttt{byte}, \texttt{short}, \texttt{int} and Objects or arrays, are supported --- this implies that several bytecode instructions for handling more complicated types are not supported (the complete subset is described in~\cite{jcspecs31download}).
 
     \subsection{Applet lifetime}
-% Java Card applets are developed in the Java programming language.
-The applet source files can define one or more Java packages. A package is referred to as an applet package if it contains a subclass of \class{javacard.framework.Applet} (there can be more than one). It is called a library package otherwise.  Similarly to Java, the source code is compiled into class files using Java compiler. The class files produced can now be tested and debugged.
+% JavaCard applets are developed in the Java programming language.
+The applet source files can define one or more Java packages. A package is referred to as an applet package if it contains a subclass of \class{javacard.framework.Applet} (there can be more than one). It is called a library package otherwise.  Similarly to Java, the source code is compiled into class files using Java compiler.
+% The class files produced can now be tested and debugged.
 
 Before the applet is downloaded to the target device the class files need to be converted using the JCC to a CAP (Converted APplet) file.
 
-The CAP file format is the off-card representation of JavaCard application and can contain one or more applet and library packages. The CAP files consist of several different CAP components. Java Card Converter produces a ``CAP file'' (it uses the \texttt{.cap} file extension), but it is actually a Java Archive file (JAR) that comprises of the individual CAP components. Some of the CAP components are required and some are optional.
+The CAP file format is the off-card representation of JavaCard application and can contain one or more applet and library packages. The CAP files consist of several different CAP components. JavaCard Converter produces a ``CAP file'' (it uses the \texttt{.cap} file extension), but it is actually a Java Archive file (JAR) that comprises of the individual CAP components. Some of the CAP components are required and some are optional.
 
 The second input to the JCC after the class files are export files (EXP). Export files contain the name and linking information about the packages that are imported in the applet's source code.
-Apart from creating CAP files JCC can also create export files for future conversions or Java Card Assembly (JCA) files. JCA is human-readable version of the applet's bytecode.
+Apart from creating CAP files JCC can also create export files for future conversions or JavaCard Assembly (JCA) files. JCA is human-readable version of the applet's bytecode.
 
-Before the CAP file is downloaded to the target device an off-card verifier can be utilized to verify whether the file conforms to the specifications for a given SDK version. To load a converted CAP file onto a smart card we need a Card Acceptance Device (CAD; smart card reader).
+Before the CAP file is downloaded to the target device an off-card verifier can be utilized to verify whether the file conforms to the specifications for a given SDK version. To load a converted CAP file onto a smartcard we need a Card Acceptance Device (CAD; smartcard reader).
 
-Once a JavaCard is inserted into a reader we can use an installation tool (e.g.~\cite{globalplatform}) to load the CAP file onto the device. The smart card itself has an installation program, which needs to follow the specifications in~\cite{jcspecs31download}.
+Once a JavaCard is inserted into a reader we can use an installation tool to load the CAP file onto the device. The smartcard itself has an installation program, which needs to follow the specifications in~\cite{jcspecs31download}.
 % FIXME the surroungding paragraphes!!
 
 There are three steps that need to take place before the new applet can be used. The applet's CAP file needs to be loaded on the target device, than linked and finally the applets \mintinline{bash}{install(byte[], short, byte)} method is invoked (if the \texttt{install} method is not implemented then applet's objects cannot be created and initialized~\cite{jcspecs31download}). After the installation JavaCard RE interacts with the applet mostly through the methods \texttt{select}, \texttt{process}, \texttt{deselect}, \texttt{uninstall}.
 
 % After all three steps proceed successfuly the applet is ready and can be used. In case of successful installation of an applet packgage the applet is made
 
-Applets and packages are identified on card by their Application ID (AID) defined in ISO 7816-5~\cite{jcspecs31download}. AID value is concatenated from Registered Application Provider Identifier (RID) and Proprietary Application Identifier Extension (PIX)~\cite{globalplatform}. The communication with the applet is facilitated through Application Protocol Data Unit (APDU). 
+Applets and packages are identified on card by their Application Identifier (AID) defined in ISO 7816-5~\cite{jcspecs31download}.
+% AID value is concatenated from Registered Application Provider Identifier (RID) and Proprietary Application Identifier Extension (PIX)~\cite{globalplatform}.
+The communication with the applet is facilitated through Application Protocol Data Unit (APDU). 
 % The layout of general APDU command and response is in the table~\ref{tab:apdu}.
 
 % \begin{table}
@@ -96,13 +99,13 @@ Applets and packages are identified on card by their Application ID (AID) define
 
 % \footnotetext{\texttt{SW1SW2} are called status word. The values of status words are defined in the \texttt{javacard.framework.ISO7816} package.}
 
-When CAD wants to interact with a particular applet, it issues a special APDU containing the applets AID. JavaCard RE deselects (suspends) the currently selected applet by calling its \texttt{deselect} method and calls the \texttt{select} method of the applet that matches the AID. Further APDU payloads are then relayed to the applet through its \texttt{process} method. Finally, the \texttt{uninstall} method is called when a APDU requesting deletion of the applet is received by JCRE.
+When CAD wants to interact with a particular applet, it issues a special APDU containing the applet's AID. JavaCard RE deselects (suspends) the currently selected applet by calling its \texttt{deselect} method and calls the \texttt{select} method of the applet that matches the AID. Further APDU payloads are then relayed to the applet through its \texttt{process} method. Finally, the \texttt{uninstall} method is called when a APDU requesting deletion of the applet is received by JCRE.
 
     % The \cla field from~\ref{tab:apdu} is used to differentiate higher level functionality of the applet. The \ins field is used to trigger particular operation in the applet. The \texttt{process} method usually implementes a \texttt{switch} statement that dispatches the \ins instructions to the respective methods. We will see the \ins field be used for communicating with the applets in POCs.
 
     \subsection{Attack models and defensive mechanisms}
     % As we will see in the list of related work~\ref{sec:related-work}, t
-    The previous research distinguishes three main attack categories --- physical attacks, logical attacks and combined attacks. Physical attacks target the device physical components, such as CPU and memory, by for example shooting a laser beam at them. In \cite{Prpic2010thesis} the power traces caused by the power consumption due to the execution of the bytecode instructions are stored and analyzed.
+    The previous research distinguishes three main attack categories --- physical attacks, logical attacks and combined attacks. Physical attacks target the device physical components, such as CPU and memory, by for example shooting a laser beam at them. In~\cite{Prpic2010thesis} the power traces caused by the power consumption due to the execution of the bytecode instructions are stored and analyzed (for the purpose of reverse engineering in the future).
     % A database of such traces can then be used to partially reverse engineer the instruction in future interception of power traces of unknown code execution.
     Logical attacks like~\cite{hogenboom} target the software implementation of JavaCards and try to exploit bugs in the implementation of JCRE and JCVM (or even the card OS). Combined attacks combine the previous two.
     %Physical disturbance might allow skipping an internal validation of malicious applet, which would otherwise be prevented from execution as in~\cite{barbusecond}.
@@ -116,26 +119,28 @@ When CAD wants to interact with a particular applet, it issues a special APDU co
         % In the second section we present the JavaCard Vulnerability Scanner; this tool currently supports multiple logical attacks and for each one of them the attacker model is the same. The adversary needs to be in the possession of the target JavaCard, have the ability to install additional applets and issue APDU commands to it afterwards.
 
         JavaCard technology is build to be used in secure elements such as smartcards. Therefore it is natural that several defensive mechanisms are in place to attempt to stop the attacker from misusing the device and obtain information, that must be kept secret (e.g. private keys).
-The techniques we are about to describe are software based. However, smartcards need also to be tamper resistant, because several destructive or invasive techniques can be utilized to compromise its physical security as showed in~\cite{kommerling}.
+The techniques we are about to describe are software based. However, smartcards need also to be tamper resistant, because several destructive or invasive techniques can be utilized to compromise its security as showed in~\cite{kommerling}.
         % Smart cards in general are developed to be used in situation, where security is an important if not the most important requirement. They are used in banking industry, person identification (national ID cards, passports)  or for example as access tokens to buildings. Due to those reasons it is obvious, that mechanisms defending the secret information (such as private keys used in Public Key Infrastructures) stored on those cards need to defended well against various attack vectors.
 
 % \section{Defensive Measures Against the Attacks}
     % \subsection{The Compiler}
 
-% The Java compiler is used to compile the Java Card source files into the class files. 
+% The Java compiler is used to compile the JavaCard source files into the class files. 
     \subsubsection{The off-card bytecode verifier}
 
 % FIXME cite SDK
-The various JavaCard SDKs are equiped with tools used for off-card verifications of the CAP, EXP and JCA files~\cite{jcoffcardverifier}. After the CAP file conversion the off-card verification can take place. The internal integrity of the CAP file and the associated export files is verified according to the JCVM specifications~\cite{jcspecs31download}.
+The various JavaCard SDKs are equiped with tools used for off-card verification of the CAP, EXP and JCA files~\cite{jcoffcardverifier}. After the CAP file conversion the off-card verification can take place. The internal integrity of the CAP file and the associated export files is verified according to the JCVM specifications~\cite{jcspecs31download}.
 
     \subsubsection{The on-card bytecode verifier}
 
-    If the off-card bytecode verification is not enforced a malicious CAP file can be created and loaded onto a card. It is then up to the card to decide, whether it will accept or reject such CAP file. As we will see in section~\ref{chp:results} the behaviour of JavaCards differs. Similarly, discrepanies in the implementation of on-card installer and JavaCard RE are observed in~\cite{lanettrojan}. The on-card bytecode verification is mandatory for JavaCard 3.0 Connected Edition and higher~\cite{barbusecond}. As observed in the previous results and in our own, it is apparent that JavaCard manufacturers implement the on-card bytecode verifier (BCV) differently. The verification happens while the CAP file is loaded. The verification can comprise of checking that the different CAP file components are present and the references to export files are resolved properly to the objects on the card.
+    If the off-card bytecode verification is not enforced a malicious CAP file can be created and loaded onto a card. It is then up to the card to decide, whether it will accept or reject such CAP file. As we will see in the section~\ref{chp:results} the behaviour of JavaCards differs. Similarly, discrepanies in the implementation of on-card installer and JavaCard RE are observed in~\cite{lanettrojan}. The on-card bytecode verification is mandatory for JavaCard 3.0 Connected Edition and higher~\cite{barbusecond}. As observed in the previous results and in our own, it is apparent that JavaCard manufacturers implement the on-card bytecode verifier differently.
+    % The verification happens while the CAP file is loaded.
+    The verification can comprise of checking that the different CAP file components are present and the references to export files are resolved properly to the objects on the card.
 
 
     \subsubsection{Applet firewall}
 
-    JavaCard technology allows multiple applications to be installed alongside on a single devices~\cite{jcspecs31download}. To prevent the different applets to accidentaly (or maliciously) access data of other applications the JCRE introduces in Applet firewall~\cite{jcspecs31download}. Different applets on JavaCard are assigned different spaces called contexts. The firewall acts as a boundary between those contexts. Each CAP file of an applet package is assigned its own context, library packages share the context of the creating applet instance. One CAP file can define multiple applets --- those will share the same contexts and can therefore access objects of each other. Applets from one context are denied by the firewall access to applets from a different context.
+    JavaCard technology allows multiple applications to be installed alongside on a single devices~\cite{jcspecs31download}. To prevent the different applets to accidentaly (or maliciously) access data of other applications the JCRE introduces in Applet firewall~\cite{jcspecs31download}. Different applets on JavaCard are assigned different memory regions called contexts. The firewall acts as a boundary between those contexts. Each CAP file of an applet package is assigned its own context, library packages share the context of the creating applet instance. One CAP file can define multiple applets --- those will share the same contexts and can therefore access objects of each other. Applets from one context are denied by the firewall access to applets from a different context.
     There is one special context assigned to the JavaCard RE. It possesses higher privileges and can access contexts of other applets.
     %Sometimes the applets from different contexts do need to access objects that reside in different context. Theses cases are covered by the following mechanisms --- JCRE Entry Points Objects, Sharing Arrays, JCRE privileges, Shareable Interfaces. An example of JCRE Entry Point Object is the APDU object that implments the buffer used for I/O operations with the CAD.
 
@@ -145,32 +150,32 @@ The various JavaCard SDKs are equiped with tools used for off-card verifications
 
     In his master's thesis~\cite{sergei} Sergei Volokitin presents several attacks against JavaCards.
     % ~\cite{sergei} describes maltitude of attacks.
-    The most interesting ones are attacks on the secure containers such as \texttt{OwnerPIN}, the author first finds the object in memory, which is stored encrypted, then uses chosen plaintext cryptanalysis to learn that the PIN is encrypted using ECB mode. The author further noticies similarities in the handling of \texttt{OwnerPIN} and \texttt{DESKey} objects and finds out, that the \texttt{OwnerPIN} can by decrypted easily. Firstly, encrypted bytes of \texttt{OwnerPIN} are copied into a \texttt{DESKey} controlled by the attacker, then \texttt{getKey} method is called on the unsuspecting \texttt{DESKey} and the \texttt{PIN} is retrieved to the attacker.
+    The most interesting ones are attacks on the secure containers such as \texttt{OwnerPIN}. The author first finds the object in memory, which is stored encrypted, then uses chosen plaintext cryptanalysis to learn that the PIN is encrypted using ECB mode. The author further noticies similarities in the handling of \texttt{OwnerPIN} and \texttt{DESKey} objects and finds out, that the \texttt{OwnerPIN} can by decrypted easily. Firstly, encrypted bytes of \texttt{OwnerPIN} are copied into a \texttt{DESKey} controlled by the attacker, then \texttt{getKey} method is called on the unsuspecting \texttt{DESKey} and the \texttt{PIN} is retrieved to the attacker.
 
     \subsubsection{Security Explorations}\label{subsec:security-explorations}
 
-    In 2019 a company from Poland called Security Explorations\footnotemark released five notices~\cite{se:oracle:part1,se:oracle:part2,se:oracle:part3,se:gemalto:part1,se:gemalto:part2} that describe security vulnerabilities in JavaCards. Overall, they have reported 34 individual issues. The reports~\cite{se:oracle:part1,se:oracle:part2,se:oracle:part3} test the vulnerabilities on JavaCard Reference Implementation from Oracle~\cite{jcspecs31download}  and cover issues like insufficient implementation of JCVM bytecode instructions and JCAPI methods or handling of CAP file and its insufficient verification. The individual issues have been verified by Security Explorations on the reference implementation (the Reference implementation binary is called \cref) of JavaCard technology version 3.1 (currently available for download at~\cite{jcspecs31download}).
+    In 2019 a company from Poland called Security Explorations\footnotemark\ released five notices~\cite{se:oracle:part1,se:oracle:part2,se:oracle:part3,se:gemalto:part1,se:gemalto:part2} that describe security vulnerabilities in JavaCards. Overall, they have reported 34 individual issues. The reports~\cite{se:oracle:part1,se:oracle:part2,se:oracle:part3} test the vulnerabilities on JavaCard Reference Implementation from Oracle~\cite{jcspecs31download}  and cover issues like insufficient implementation of JCVM bytecode instructions and JCAPI methods or handling of CAP file and its insufficient verification. The individual issues have been verified by Security Explorations on the Reference implementation (the Reference implementation binary is called \cref) of JavaCard technology version 3.1 (currently available for download at~\cite{jcspecs31download}).
 
-The second batch of reports~\cite{se:gemalto:part1,se:gemalto:part2} analyze Gemalto Java Card based products and identify vulnerabilities in the SIM Toolkit applet (STK applet). Those vulnerabilities are caused by unmanaged or leaking memory references. Most notable is the result in~\cite{se:gemalto:part2}, where the authors used the discovered vulnerability to load Java Card applet over-the-air to a target SIM card. Furthermore, they conclude that it should be possible to exploit the vulnerabilities from~\cite{se:gemalto:part1,se:gemalto:part2} in such a way, that a hidden backdoor is loaded onto a SIM card.
+The second batch of reports~\cite{se:gemalto:part1,se:gemalto:part2} analyze Gemalto JavaCard based products and identify vulnerabilities in the SIM Toolkit applet (STK applet). Those vulnerabilities are caused by unmanaged or leaking memory references. Most notable is the result in~\cite{se:gemalto:part2}, where the authors used the discovered vulnerability to load JavaCard applet over-the-air to a target SIM card. Furthermore, they conclude that it should be possible to exploit the vulnerabilities from~\cite{se:gemalto:part1,se:gemalto:part2} in such a way, that a hidden backdoor is loaded onto a SIM card.
 
 
-\footnotetext{The company has stopped operating, however, its lead security researcher Adam Gowdiak is now working under Adam Gowdiak Security Research (see \url{http://www.agsecurityresearch.com/}).}
+\footnotetext{The company has seized to exist, however, its lead security researcher Adam Gowdiak is now working under Adam Gowdiak Security Research (see \url{http://www.agsecurityresearch.com/}).}
 
     The vulnerability noticies~\cite{se:oracle:part1,se:oracle:part2,se:oracle:part3} are also accompanied by a POC~\cite{se:downloadpage}, that help to demonstrate the issues. The POCs comprise of Java source files, custom Gen Tool and several batch scripts.
 
 
-We will go through two of the POCs exploiting the vulnerabilites in~\cite{se:oracle:part1,se:oracle:part2,se:oracle:part3} in greater detail, however, all of them are included in \projectname. Each POC consists of two applets \appletscap and \vulnscaporig (from which a malicious \vulnscap is generated with the Gen Tool). Every POC then defines several instructions (explained later), that are used to exploit the particular vulnerability.
+We will go through two of the POCs exploiting the vulnerabilites in~\cite{se:oracle:part1,se:oracle:part2,se:oracle:part3} in greater detail, however, all of them are included in \projectname. Each POC consists of two applets \appletscap and \vulnscaporig (from which a malicious \vulnscap is generated with the Gen Tool). Every POC then defines several instructions that are used to exploit the particular vulnerability.
 
-There aren't as many POCs as there are vulnerabilities discovered, because the POCs unite the vulnerabilities of similar nature. We will use the issue numbering as in the original reports. The following sections briefly describe the vulnerabilities from~\cite{se:oracle:part1}.
+% There aren't as many POCs as there are vulnerabilities discovered, because the POCs unite the vulnerabilities of similar nature. We will use the issue numbering as in the original reports. The following sections briefly describe the vulnerabilities from~\cite{se:oracle:part1}.
 
 \subsubsection{POC \texttt{arraycopy}}\label{subsec:arraycopy-explanation}
-Similarly, the JCAPI methods \arrayCopy and \arrayCopyNonAtomic from \mintinline[breaklines,breakafter=.]{python}{javacard.framework.Util} class~\cite{jcspecs31download} do not perform sufficient checks on input arguments. Both methods fail to prevent passing object instance (instead of an array) as an input argument. \cite{se:oracle:part1} mentions, that some similar methods do the input validation properly. The POC implements the instructions \readmem and \writemem, that can read and write memory through exploitation of one of the aforementioned methods.
+The JCAPI methods \arrayCopy and \arrayCopyNonAtomic from \mintinline[breaklines,breakafter=.]{python}{javacard.framework.Util} class~\cite{jcspecs31download} do not perform sufficient checks on input arguments. Both methods fail to prevent passing object instance (instead of an array) as an input argument. \cite{se:oracle:part1} mentions, that some similar methods do the input validation properly. The POC implements the instructions \readmem and \writemem, that can read and write memory through exploitation of one of the aforementioned methods.
 
-\subsubsection{POC \texttt{arrayops}}
-As was explained in~\ref{subsec:arraycopy-explanation}, it is not always the case, that array methods perform sufficient validation of the its arguments. A custom crafted object can be passed as an input argument instead of an array reference. Such object is then interpreted as an array of a very large size. The POC \arrayops exploits the methods \arrayFill, \arrayFillNonAtomic, \setShort, \setInt. The POC applet defines two instructions \readmem and \writemem, that allow to read and write outside of the allowed memory regions.
+% \subsubsection{POC \texttt{arrayops}}
+% As was explained in~\ref{subsec:arraycopy-explanation}, it is not always the case, that array methods perform sufficient validation of the its arguments. A custom crafted object can be passed as an input argument instead of an array reference. Such object is then interpreted as an array of a very large size. The POC \arrayops exploits the methods \arrayFill, \arrayFillNonAtomic, \setShort, \setInt. The POC applet defines two instructions \readmem and \writemem, that allow to read and write outside of the allowed memory regions.
 
 % \subsection{POC \texttt{baload_bastore}}
-% The byte code instructions \baload and \bastore load byte or boolean from array, respectively store byte or boolean from array~\cite{jcspecs31download}. The array argument to \baload instruction is checked and Security Exception is raised if the array is an array of shorts, integers or objects. Otherwise, the execution proceeds. However, instead of an array the argument can be a single object and the checks pass as well. 
+% The bytecode instructions \baload and \bastore load byte or boolean from array, respectively store byte or boolean from array~\cite{jcspecs31download}. The array argument to \baload instruction is checked and Security Exception is raised if the array is an array of shorts, integers or objects. Otherwise, the execution proceeds. However, instead of an array the argument can be a single object and the checks pass as well. 
 % The POC code defines six different instructions --- \ping, \status, \setup are used to check and setup the vulnerability state. The instructions \readmem and \writemem demonstrate reading and writing memory. Final instruction \cleanup is used to clean the initial exploit setup. The~\cite{se:oracle:part1} state the impact of the vulnerability is ``compromise of memory safety / arbitrary read access to card memory''.
 
 % \subsection{POC \texttt{nativemethod}}
@@ -179,31 +184,36 @@ As was explained in~\ref{subsec:arraycopy-explanation}, it is not always the cas
 
 
 % \subsection{POC \texttt{referencelocation}}
-% Some byte code instructions, like \getfield reference various fields and methods. Those references are stored as indeceses to the Constant Pool (\mintinline{python}{ConstantPool} CAP component), that contains tokens for the fields and methods at each index. The internal representation of those tokens is substituted for the indeces when a CAP file is loaded on JavaCard.~\cite{se:oracle:part1} refers to this process as ``linking''. The \texttt{ReferenceLocation} component stores the table of locations for each of the previously described substitutions.
+% Some bytecode instructions, like \getfield reference various fields and methods. Those references are stored as indeceses to the Constant Pool (\mintinline{python}{ConstantPool} CAP component), that contains tokens for the fields and methods at each index. The internal representation of those tokens is substituted for the indeces when a CAP file is loaded on JavaCard.~\cite{se:oracle:part1} refers to this process as ``linking''. The \texttt{ReferenceLocation} component stores the table of locations for each of the previously described substitutions.
 % Before, the ``linking'' is done, each token value is checked to assure, that its value does not go beyond the size for the object (recall, that the token values refer to object fields and methods). If the value overflows, it is trimmed. However, if an entry in the \texttt{ReferenceLocation} table is omitted, the corresponding check of the token value is skipped as well, thus allowing the \getfield instruction access beyond the object size.
 % The POC defines six instructions \getfieldins, \putfieldins\footnotemark, which allow to read and write the memory through a custom token value. 
-% \footnotetext{The \texttt{<T>} refers to the particular type of the underlying byte code instruction defined in~\cite{jcspecs31download}.}
+% \footnotetext{The \texttt{<T>} refers to the particular type of the underlying bytecode instruction defined in~\cite{jcspecs31download}.}
 
 % \subsection{POC \texttt{staticfieldref}}
 % As explained in~\ref{sec:jc:lifecycle} CAP file comprises of different CAP components one of which is \mintinline{python}{StaticField} component. This component is referenced through \constantstaticfieldref item~\cite{jcspecs31download}. The \texttt{offset} value is not checked and can be changed, to point to arbitrary value. Then, through the use of byte instructions \getstatic\footnotemark and \putstatic the memory at the new \texttt{offset} can be read and written, respectively. The POC uses single instruction~\getstaticins, that returns the \texttt{offset} value, that was maliciously altered after the POC CAP file conversion.
-% \footnotetext{Both \getstatic and \putstatic represent several byte code instructions for particular types.}
+% \footnotetext{Both \getstatic and \putstatic represent several bytecode instructions for particular types.}
 
-% \subsection{POC \texttt{swap_x}}
-% JCVM is stack based and uses frames to hold the information about the currently executed method, such as local variables and the operand stack. The byte code instruction \swapx allows to swap $M$ words with $N$ words, that reside in the operand stack directly below. The intention is to swap one or two words on the stack~\cite{jcspecs31download}. If larger values for $N$ are provided a potential return address or instruction override can happen.
-% The POC code has a single instruction \triggerswapx, that invokes the malformed \swapx instruction. According to~\cite{se:oracle:part1} the instruction is expected to return \mintinline{python}{0x1234}, however, when executed in JCRE for \texttt{cref} a crash is observed in~\cite{se:oracle:part1} instead. When we have tested this POC on real JavaCards we have received the expected response as is discussed in~\ref{subsec:swapx} on four of them.
+\subsubsection{POC \texttt{swap_x}}
+JCVM is stack based and uses frames to hold the information about the currently executed method, such as local variables and the operand stack. The bytecode instruction \swapx allows to swap $M$ words with $N$ words, that reside in the operand stack directly below. The intention is to swap one or two words on the stack~\cite{jcspecs31download}. If larger values for $N$ are provided a potential return address or instruction override can happen.
+The POC code has a single instruction \triggerswapx, that invokes the malformed \swapx instruction. According to~\cite{se:oracle:part1} the instruction is expected to return \mintinline{python}{0x1234}, however, when executed in JCRE for \texttt{cref} a crash is observed in~\cite{se:oracle:part1} instead. When we have tested this POC on real JavaCards we have received the expected response
+% as is discussed in~\ref{subsec:swapx}
+on four of them as showed in the table~\ref{tab:best-swap_x}.
 
 
 \subsubsection{Related JavaCard testing tools}
-Riscure, Dutch company located in Delft, has a product called JCworkBench, that can be used to perform a robust security of a real JavaCard as demonstrated in~\cite{jcworkbench,riscurejcworkbenchpdf}. However, it is not clear from Riscure's website~\cite{riscureweb}, whether it can still be purchased as it is not listed there anywhere.\footnotemark
+Riscure, a Dutch company located in Delft, has a product called JCworkBench, that can be used to perform a robust security of a real JavaCard as demonstrated in~\cite{jcworkbench,riscurejcworkbenchpdf}. However, it is not clear from Riscure's website~\cite{riscureweb}, whether it can still be purchased as it is not listed there anywhere.\footnotemark
 
 \footnotetext{The tool was only found presumably for sale on a different website at \url{https://www.etesters.com/product/7E9C25F0-D8CC-0B99-67BC-8BF36D42FE30/smart-card-security-test-tool/}}
 
-Java Card Firewall Tester briefly introduced in~\cite{Mostowski07testingthe} is no longer available for download at~\cite{firewalltester} and the download site does not seem to be maintained anymore.
+JavaCard Firewall Tester briefly introduced in~\cite{Mostowski07testingthe} is no longer available for download at~\cite{firewalltester} and the download site does not seem to be maintained anymore.
 
 Two notable JavaCard testing tools are JCAlgTest~\cite{jcalgtest} and\linebreak ECTester~\cite{ectester}, both developed at CRoCS~\cite{crocsweb}. However, both those tools assess the security and safety of the implementation of the cryptograhical primitives and algorithms and not the resistance of JCRE or JCVM to logical attacks.
 
-\section{JavaCard Vulnerability Scanner}
-    The work done in~\cite{anon2020thesis} resulted in an automated testing tool called \projectname. The thesis explains its architecture, design choices and usage in much more detail. Here we will only present the most important points.
+\section{JavaCard Vulnerability Scanner}\label{sec:javacard-vulnerability-scanner}
+Naturally, a question arises: Is there even a need for a tool, that would test the shortcomings of JavaCard VM and JavaCard RE?  In the last section we have mentioned previous research, some of which includes the source code for a POC attack. However, if the reader imagines himself holding a JavaCard and wondering, whether it is vulnerable to a specific kind of an attack there is still \textit{a lot} of work to be done. Some of the POCs are \textit{only} included in the original paper and not accompanied with the source and build files. Or in the case of vulnerabilities discovered by Security Explorations the source code is included (as a ZIP archive), but the attacks are automated only for use with the reference implementation of JCRE.
+% Also, they are built only with SDK 3.0.5GA. Given the number of new attacks discovered in the last years~\cite{se:oracle:part1, se:oracle:part2, se:oracle:part3, se:gemalto:part1, se:gemalto:part2} it is increasingly harder to perform systematic security analysis of a real JavaCard against all known (logical) attacks.
+
+    The work done in author's thesis~\cite{anon2020thesis} resulted in an automated testing tool called \projectname. The thesis explains its architecture, design choices and usage in much more detail. Here we will only present the most important points.
     
     \subsection{The design of the testing framework}
 % First, we will start with the list of the specifications for the framework. Before we go through them one by one and look at the way that they are implemented in more detail we define some terms and explain the project structure.
@@ -223,10 +233,11 @@ Two notable JavaCard testing tools are JCAlgTest~\cite{jcalgtest} and\linebreak 
                 \begin{enumerate}
                     \item[\textbf{attack}] is the overarching term used for describing a (particular) way of exploiting a vulnerability in JCVM or JCRE\@. Especially, POCs described in previous section will be from now on in most cases referred to as attacks,
                         % When we talk about \textbf{a particular} attack we will try to name it as well to avoid confusion. For example, when we say \textbf{ArrayCopy attack} we are talking about the attack exploiting the \mintinline{java}{arrayCopy} method from class \mintinline{python}{javacard.framework.Util} as it is implemented in the directory \filepath{javus/javus/data/attacks/arraycopy},
-                    \item[\textbf{stage}] or fully \textbf{an attack stage} is one part of the attack, e.g. the installation of a CAP file, that is required by the attack to work. During another stage we could send an APDU command to a JavaCard.
+                    \item[\textbf{stage}] or fully \textbf{an attack stage} is one part of the attack, e.g. the installation of a CAP file, that is required by the attack to work. During another stage we could send an APDU command to a JavaCard,
                         %Good example of stages are instructions from the POCs from the section ~\ref{chp:state-of-the-art},
                     % \item[\textbf{scenario}] or fully \textbf{attack scenario} consists of all the stages of an attack, in the source code represented by a python class \mintinline{python}{Scenario}
-                    \item[\textbf{run}] describes the execution of a set  of (one or more) attacks on a particular physical JavaCard and is usually referencing the \javusrun command, the expressions \textit{test run, analysis run} etc. are simply synonyms.
+                    \item[\textbf{run}] describes the execution of a set  of (one or more) attacks on a particular physical JavaCard and is usually referencing the \javusrun command
+                        % , the expressions \textit{test run, analysis run} etc. are simply synonyms.
                 \end{enumerate}
 
     \begin{figure}[htb!]
@@ -244,7 +255,7 @@ Two notable JavaCard testing tools are JCAlgTest~\cite{jcalgtest} and\linebreak 
 
     \subsection{Building and executing the attacks}\label{sec:build-execute-attacks}
 
-    The diagram~\ref{fig:full-design-diagram} shows a single run of the testing tool \javus. The blue boxes represent a user input. The user is only required to insert the JavaCard and execute a single command \javusrun (which invokes the \mintinline{bash}{javus.analyzer.App} class that is responsible for orchestrating the complete analysis). Once the tool is invoked, it loads the registered attacks and executes them one by one. The results are being updated to the MonogDB database continuously, because the card can stop working at any time during the run.
+    The figure~\ref{fig:full-design-diagram} shows a single run of the testing tool \javus. The blue boxes represent a user input. The user is only required to insert the JavaCard and execute a single command \javusrun (which invokes the \mintinline{bash}{javus.analyzer.App} class that is responsible for orchestrating the complete analysis). Once the tool is invoked, it loads the registered attacks and executes them one by one. The results are updated to the MonogDB database continuously, because the card can stop working at any time during the run.
     % (as the reader will see in the section~\ref{chp:results}).
     Executing multiple attacks automatically is not\linebreak straightforward.
     % For reasons that are explained later in~\ref{sec:uniq-aid}
@@ -256,12 +267,12 @@ Two notable JavaCard testing tools are JCAlgTest~\cite{jcalgtest} and\linebreak 
 
     After \shortappclass handles the command line arguments it hands the execution over to \mintinline{python}{javus.analyzer.AnalysisManager}, which iterates over the registered attacks (loaded from \filepath{registry.ini}). For each attack \mintinline{python}{AnalysisManager} loads the appropriate subclass of \shortbuilderclass respectively \shortexecutorclass that is responsible for building, respectively executing the attack. Each attack is then build for all supported SDK versions and executed on the target JavaCard.
 
-    The framework uses Docker to achieve cross-platformity or can be invoked natively on Linux. The results of the individual runs can be viewed in a simple web application (see figure~\ref{fig:web-interface-pic}).
+    Eight attacks are currently included in the framework, however, new ones can be added. To do so the actual source code for the attack is needed alongside the different stages defined in a Python module file (see~\cite{anon2020thesis} for details). The framework uses Docker to achieve cross-platformity or can be invoked natively on Linux. The results of the individual runs can be viewed in a simple web application (see figure~\ref{fig:web-interface-pic}).
 
     \begin{figure}[htb!]
         \centering
         \includegraphics[width=\textwidth]{src/imgs/web-app-all.png}
-        \caption{Web interface that allows to filter the results by previous runs, attacks or cards.\label{fig:web-interface-pic}}
+        \caption{Web interface that allows to filter the results on runs, attacks or cards.\label{fig:web-interface-pic}}
     \end{figure}
     % Now we will take a closer look at those two classes. While reading the next sections the reader can consult the diagram in the figure~\ref{fig:execute-attack-diagram}.
 % FIXME sub?
@@ -270,7 +281,7 @@ While no new attacks have been discovered during the research and implementation
 
     % \subsection{Crashcourse in fuzzing}
     \subsection{Fuzzing of JavaCards}
-    Fuzzing JavaCards is not as straightforward as fuzzing for example a binary file. Flooding a JavaCard with random applets and APDUs will most probably result in the JavaCard getting muted or blocked (such results were observed even for few manually executed and not completely random inputs). However, we have come up with two approach that might allow us to use fuzz testing against the JavaCard platform. First, we will look at fuzzing a real JavaCards. However, we will take a bit more elaborate approach instead of sending completely random inputs to the JavaCard.
+    Fuzzing JavaCards is not as straightforward as fuzzing for example a binary file. \textit{Flooding} a JavaCard with random applets and APDUs will most probably result in the JavaCard getting muted or blocked (such results were observed even for few manually executed and not completely random inputs). However, we have come up with two approaches that allow us to use fuzz testing against the JavaCard platform. First, we will look at fuzzing a real JavaCards. We take a bit more elaborate approach instead of sending completely random inputs to the JavaCard.
 
     We will start with a working and valid CAP file \texttt{seed.cap}, then create a fuzzed version of that file (for example using~\cite{radamsa}). If this new \texttt{fuzzed.cap} file fails the off-card verification process, we will attempt to install it on a real card. If the card accepts it, it means that the on-card bytecode verifier is not \textit{aligned} with the off-card one. We could also do it the other way around --- if the off-card verifier accepts the \texttt{fuzzed.cap} we will install it and if the on-card verifier reports and error during the installation we have another discrepancy between the verifiers. On the next few lines the reader can see pseudo code of the first fuzzing technique:
 
@@ -279,7 +290,7 @@ While no new attacks have been discovered during the research and implementation
 \begin{minted}[linenos]{text}
 while true:
     generate a valid CAP file seed.cap
-    use fuzzing on valid.cap to generate fuzzed.cap
+    use fuzzing on seed.cap to generate fuzzed.cap
     verify fuzzed.cap with off-card
     if the verification succeeds:
         continue to line 2
@@ -295,10 +306,10 @@ Fuzz-testing is usually done continuously (running for days up to months at a ti
 
 While a way of fuzzing real JavaCards can yield interesting results (testing the actual device is usually preferred over testing just some simulation), it is quite a slow process (compared to fuzzing e.g.\ binaries). And while it can be run in parallel on multiple cards this does not fix the problem of cards getting muted or blocked unexpectedly. The work done by Security Explorations together with our own results (presented in the next section) show that finding issues in the Reference implementation is worth the effort. Therefore we propose another way of testing \cref --- fuzzing it directly.
 
-Reference implementation mimics the usage of a CAD and a JavaCard, but everything is done on a software level. While the actual setup of fuzzing will be a bit different the speed up is expected to be significant. And not only that, because the \cref is a common binary we can take advantage of debugging tools and automatically investigate, how e.g.\ the \cref memory changes during the fuzz-testing. What we could potentially see are changes in the contexts that do not belong to the currently selected applet. At the moment those are only high-level ideas, but there does not seem to be anything preventing this kind of fuzzing.
+Reference implementation mimics the usage of a CAD and a JavaCard, but everything is done on a software level. While the actual setup of fuzzing will be a bit different the speed up is expected to be significant. And not only that, because the \cref is a common binary we can take advantage of debugging tools and automatically investigate e.g.\ the \cref memory changes during the fuzz-testing. What we could potentially see are changes in the contexts that do not belong to the currently selected applet. At the moment those are only high-level ideas, but there does not seem to be anything preventing this kind of fuzzing.
 
 \section{The results on real cards and discussion}\label{chp:results}
-In this section we will utilize the attacks discussed in the section~\ref{sec:state-of-the-art} and the testing framework JavaCard Vulnerability Scanner presented in the previous section and analyze a set of real JavaCards. Aquiring a large number of distinct JavaCards is not an easy task (as they are usually hard to come by in small $< 1000$ quantities), however, we had an interesting variety of JavaCards available for testing. The tested JavaCard were fabricated between the years 2011 a 2017 and the operating systems on these cards were released between the years 2010 and 2018. The list of the cards can be seen in the table ~\ref{tab:card-list}.
+In this section we will utilize the attacks discussed in the section~\ref{sec:state-of-the-art} and the testing framework JavaCard Vulnerability Scanner presented in the section~\ref{sec:javacard-vulnerability-scanner} and analyze a set of real JavaCards. Aquiring a large number of distinct JavaCards is not an easy task (as they are usually hard to come by in small $< 1000$ quantities), however, we had an interesting variety of JavaCards available for testing. The tested JavaCard were fabricated between the years 2011 a 2017 and the operating systems on these cards were released between the years 2010 and 2018. The list of the cards can be seen in the table ~\ref{tab:card-list}.
 
 \begin{table}[htb]
     \hfill
@@ -348,11 +359,12 @@ In this section we will utilize the attacks discussed in the section~\ref{sec:st
     }
     \hfill
     \parbox[b][][b]{.45\linewidth}{
-        \input{src/tables/subtables/best-arrayops.tex}
+        % \input{src/tables/subtables/best-arrayops.tex}
+        \input{src/tables/subtables/best-swap-x.tex}
     }
 \end{table}
 
-\subsection{\texttt{arraycopy}}\label{subsec:result-arraycopy}
+\subsection{Results of \texttt{arraycopy}}\label{subsec:result-arraycopy}
             As the reader can see in the table~\ref{tab:best-arraycopy} only a single card was vulnerable to this attack. For every SDK version the cards \Cnewcard, \Fcard, \Gcard, \Hcard, \Inewcard prevented already the load of the malicious CAP \vulnscap. Each responded with the status word \swwrongdata, except the \Cnewcard, which has failed with \swunknown and \Inewcard with \swwrongdata. The \vulnscap could not have been installed on \Icard, \Ccard and the status word \swconditionsnotsatisfied was returned.
             % \Inewcard also acted unlike \Icard with the load failing with \mintinline{bash}{0x6A80 - WRONG_DATA}.
             % \import{src/tables/subtables}{best-arraycopy.tex}
@@ -428,18 +440,38 @@ In this section we will utilize the attacks discussed in the section~\ref{sec:st
             % \import{src/tables/subtables}{best-arrayops.tex}
 
             % FIXME use attack that had better results
-            \subsection{\texttt{arrayops}}
-            % TODO figure out, where is this frooom
-            This attack can only be built for the 3.0.5u1--3.0.5u3 SDK versions. The results of the attack do differ across the range of the cards (see the table~\ref{tab:best-arrayops}), however, for fixed card the results don't differ across the SDKs.
-            
-            The load of \vulnscap failed with the status word \shortswwrongdata for the cards \Fcard, \Gcard, \Hcard and \Inewcard with status word \shortswunknown for \Cnewcard card. For \Jcard the loading of \vulnscap returned unknown status word \mintinline{python}{0x6438}. The card \Ccard could not install \vulnscap and gave \shortswconditionsnotsatisfied error. 
 
-            The cards \Acard and \Dcard allowed the installation of \vulnscap, but returned \shortswwrongdata during the load of \appletscap. The card \Icard exited the installation of \appletscap with \shortswconditionsnotsatisfied.
-            Therefore, none of the tested cards are vulnerable to this kind of attack.
+            % \subsection{\texttt{arrayops}}
+            % % TODO figure out, where is this frooom
+            % This attack can only be built for the 3.0.5u1--3.0.5u3 SDK versions. The results of the attack do differ across the range of the cards (see the table~\ref{tab:best-arrayops}), however, for fixed card the results don't differ across the SDKs.
+            
+            % The load of \vulnscap failed with the status word \shortswwrongdata for the cards \Fcard, \Gcard, \Hcard and \Inewcard with status word \shortswunknown for \Cnewcard card. For \Jcard the loading of \vulnscap returned unknown status word \mintinline{python}{0x6438}. The card \Ccard could not install \vulnscap and gave \shortswconditionsnotsatisfied error. 
+
+            % The cards \Acard and \Dcard allowed the installation of \vulnscap, but returned \shortswwrongdata during the load of \appletscap. The card \Icard exited the installation of \appletscap with \shortswconditionsnotsatisfied.
+            % Therefore, none of the tested cards are vulnerable to this kind of attack.
+
+        \subsection{Results of \texttt{swap_x}}\label{subsec:swapx}
+        % TODO add \xspace to the custom mintinlines
+
+            Four cards allowed all attack stages as the reader can see in the table~\ref{tab:best-swap_x}.
+        % TODO align the card an SDK to the top in the table?
+            % \import{src/tables/subtables}{best-swap-x.tex}
+            The card \Gcard prevented the loading of \vulnscap for all SDKs and returned the unknown status word \mintinline{python}{0x6484}. For the cards \Ccard and \Icard the attack got a bit further and failed during the installation of \vulnscap with the error \shortswconditionsnotsatisfied, regardless of the SDK.
+
+%TODO TRIGGER_SWAPX did overflow, fix, breaklines and breakafter did not work
+            Again, the \Cnewcard (for all SDKs) behaved differently and let the \vulnscap to be installed, but failed during the loading of \appletscap and gave \shortswconditionsnotsatisfied. The card \Acard installed both applets successfully for SDK 2.2.1., but while sending the \mintinline{python}{TRIGGER_SWAPX} the card stopped working with \scardwunpoweredcard. Other SDKs were not tested.
+
+        The card \Dcard could not load the \appletscap for SDKs 2.2.2--3.0.5u1 and returned the status word \shortswwrongdata, moreover, for 3.0.5u1 the card stopped working with \scardenottransacted. Only for the SDK 2.2.1. both applets were installed and the attack failed during the execution of the send stage with \shortswclanotsupported.
+
+
+    Now we are moving on to the cards, that could not prevent the attack completely. As observed previously, the cards \Fcard and \Hcard behaved in the exact same way. For the SDKs 3.0.3.--3.0.5u3 the loading of \appletscap failed with \shortswwrongdata, however, the for other versions 2.2.1. and 2.2.2. the attack worked completely. The card \Inewcard did react only slightly differently. The attack has succeeded for SDK 2.2.2. and failed for the rest while loading the \appletscap, but this time the returned status word was \shortswconditionsnotsatisfied.
+
+    Finally, the situation with the \Jcard. Again, the oldest SDK version 2.2.1. did allow the attack to pass all of the stages. For the SDK versions 2.2.2.--3.0.4. both applets were installed, but the send staged resulted in the error word \shortswinsnotsupported. For the rest of the SDKs 3.0.5u1--3.0.5u3 the attack did not go further than installing the \vulnscap and failed during the loading of \appletscap with the unknown status word \mintinline{python}{0x6438}.
+
 
             \subsection{Overall results}
 
-        To give the reader an overview across all the cards and all the attacks we present them once more in a single table~\ref{tab:results-overview}. The SDK version in the table represents the newest SDK for which the given attack POC has worked. What is reassuring is the fact, that the currently oldest attack registered in JavaCard Vulnerabilty Scanner the \texttt{transaction_confusion} did not work on any of the cards. However, the card J even though it is only few years old was vulnerable to three out of eight attacks.
+        To give the reader an overview across all the cards and all the attacks we present them in a single table~\ref{tab:results-overview}. The SDK version in the table represents the newest SDK for which the given attack POC has worked. What is reassuring is the fact, that the currently oldest attack registered in JavaCard Vulnerabilty Scanner the \texttt{transaction_confusion} did not work on any of the cards. However, the card J even though it is only few years old was vulnerable to three out of eight attacks.
     
         We plan to further look into the attacks to see, if they can used to retrieve and alter different memory regions as is suggested in~\cite{se:oracle:part1}.
 
@@ -459,7 +491,7 @@ In this section we will utilize the attacks discussed in the section~\ref{sec:st
 
         % \subsection{The future of JavaCard Vulnerability Scanner}
 
-        As observed in the previous results and in our own as well it is apparent that different JavaCards implement the on-card byte code verifiers and run-time checks differently. This is not surprising, considering that the complete JavaCard RE is left to the JavaCard vendors to be implemented and already~\cite{Mostowski07testingthe} showed that the specifications are not always followed completely or can be ambiguous.
+        As observed in the previous results and in our own as well it is apparent that different JavaCards implement the on-card bytecode verifiers and run-time checks differently. This is not surprising, considering that the complete JavaCard RE is left to the JavaCard vendors to be implemented and already~\cite{Mostowski07testingthe} showed that the specifications are not always followed completely or can be ambiguous.
         % Since some cards perform better it suggests that the vendors could learn from each other in order to improve the JavaCard platformi
         % From this perspective we see potential in a project like JavaCard Vulnerability Scanner that could help bringing more transparency into the security of JavaCards. Our tool is capable to test a JavaCard across various SDKs and attacks and can gather results similar to~\ref{tab:results-overview}.
         We see potential in a project like JavaCard Vulnerability Scanner, because it can help to bring more transparency into the security of JavaCards. Our tool is capable of testing a JavaCard across various SDKs and attacks and can gather results similar to the ones in the table~\ref{tab:results-overview}. Moreover, the web application can be made public and therefore researches could share the results. We invite other developers and researchers to use this tool locally, find its shortcomings or opportunities for new features and submit both at \url{\githuburl} (incomplete URL due to anonymization). 
@@ -469,8 +501,8 @@ In this section we will utilize the attacks discussed in the section~\ref{sec:st
         % We invite other developers and researchers to use this tool locally, find its shortcomings or opportunities for new features and submit both at \url{\githuburl}. 
         % It would only be for the better if academic results would affect the non-academic world and vice-versa. Tools developed just for the sake of satisfying formal academic requirements are bound to die out quickly.
 
-        % According to Oracle~\cite{oraclehome} more than 9 billion Java Card enabled devices have been shipped since 1998 and the number keeps rising. For several years it is possible to buy open JavaCard that allow installation of new custom applets and therefore we can expect more applications emerging on the JavaCard platform.
-        % Java Card platform and the its development still kept propriatery.
+        % According to Oracle~\cite{oraclehome} more than 9 billion JavaCard enabled devices have been shipped since 1998 and the number keeps rising. For several years it is possible to buy open JavaCard that allow installation of new custom applets and therefore we can expect more applications emerging on the JavaCard platform.
+        % JavaCard platform and the its development still kept propriatery.
         % However, it is a platform deployed all over the world in billions of units and this number keeps raising.
         % And as examples from other fields of information technology show, there will hardly ever come a struggle to have a particular platform \textit{too much secure}. Rather, every step into making the security assessment of a given platform simpler to perform and more thorough is welcomed. The author would be honoured, if this tool would help to pave the way alongside the projects like JCAlgTest and ECTester (and other), towards more transparent and secure JavaCard platform.
 
@@ -484,7 +516,7 @@ In this section we will utilize the attacks discussed in the section~\ref{sec:st
 
         % Further, our approach~\ref{subsec:onofffuzzing} to on-card vs. off-card BCV fuzzing has yield preliminary results. We have not seen fuzzing used for testing JavaCard security. At first sight JavaCard does not seem to be a great platform for fuzz testing, because it relies on generating and analyzing huge number of inputs/outputs to the targetted program. We have observed, that the part of current implementation of JavaCard Vulnerability Scanner responsible for communicating with JavaCard is the bottleneck. Fuzz testing can be done in the way it was proposed in~\ref{subsec:onofffuzzing}, but it is expected to be slow. The author thinks, that maybe the whole process could be sped up significantly by first fuzzing the JavaCard RE Reference Implementation and use only subset of those inputs then on real JavaCards. Generating interesting inputs to such fuzz testing could be hard, because the reference implementation can just keep failing due to completely random inputs, but the analysis of the crash can be more elaborate than simply noting a crash of an application (as it is often enough for other fuzz testing). Because \texttt{cref} is started as a process on a standard computer an elaborate monitoring techniques could be used --- the reeader can imagine \textit{fuzzing} \texttt{cref} and making snapshots of the memory after each run. The differences between the snapshots could yield which inputs are more probably to cause a real issue. The input to fuzz testing can be fixed in the bytes regarding the installation of some applet and only subsequent APDUs can be fuzzed.         % from the many attacks, that we have studied we see few take-aways. it is a positive news, that none of the tested cards were vulnerable to the old attack \texttt{transaction_confusion}~\cite{}.
 
-        % % However, the attack was using type confusion and several new vulnerabilites exploiting slightly different type confusion on the level of byte code instructions and API methods have been discovered recently (little more than a year ago~\cite{se:gemalto:part1, se:gemalto:part
+        % % However, the attack was using type confusion and several new vulnerabilites exploiting slightly different type confusion on the level of bytecode instructions and API methods have been discovered recently (little more than a year ago~\cite{se:gemalto:part1, se:gemalto:part
 
 \newpage
 \bibliography{./src/sources.bib}
