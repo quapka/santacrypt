@@ -1,5 +1,5 @@
 TEX = pdflatex
-TARGET = javus
+TARGET = keymaker-talk-proposal-javacard-vulnerability-scanner
 
 BUILD_DIR = build
 SRC_DIR = src
@@ -28,12 +28,5 @@ build: clean proposal
 clean-all: clean
 
 clean:
-	-rm $(BUILD_DIR)/$(TARGET).aux
-	-rm $(BUILD_DIR)/$(TARGET).bbl
-	-rm $(BUILD_DIR)/$(TARGET).blg
-	-rm $(BUILD_DIR)/$(TARGET).log
-	-rm $(BUILD_DIR)/$(TARGET).out
-	-rm $(BUILD_DIR)/$(TARGET).toc
-	-rm $(BUILD_DIR)/$(TARGET).lof
-	-rm $(BUILD_DIR)/$(TARGET).lot
-	-rm $(BUILD_DIR)/$(TARGET).pdf
+	-rm -rf $(BUILD_DIR)
+	mkdir $(BUILD_DIR)
