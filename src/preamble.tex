@@ -11,7 +11,6 @@
 
 \usepackage{rotating}
 
-% \usepackage{amssymb}
 \usepackage{pifont}
 
 \usepackage{wasysym}
@@ -27,7 +26,6 @@
 \newcommand{\skipmark}{{\color{blue}$\circ$}}%
 \newcommand{\missmark}{$\bm{\circ}$}%
 \newcommand{\missmarkx}{$\bm{\ocircle}$}%
-% FIXME different way of naming the cards?
 \newcommand{\cref}{\texttt{cref}\xspace} % A and A new merged together
 
 \newcommand{\Acard}{A\xspace} % A and A new merged together
@@ -144,32 +142,10 @@
 
 \usepackage{algpseudocode}
 \usepackage{algorithm}
-% \usepackage[ruled,vlined]{algorithm2e}
 
 \usepackage{booktabs}
 
 \usepackage{algorithm}
-% \lstset{
-%   mathescape = true,
-%   basicstyle = \ttfamily}
-% \newcommand{\dollar}{\mbox{\textdollar}}
-
-% \lstdefinestyle{}
-% {
-    % numberblanklines=false,
-    % language=shell,
-    % tabsize=4,
-    % keywordstyle=\color{red},
-    % identifierstyle= %plain identifiers for make
-% }
-
-%\lstinputlisting[
-%    inputencoding=latin1, 
-%    firstline=1, 
-%    %lastline=10,
-%    caption={[Makefile]Makefile, foobar},
-%    style=makefile
-%]{./src/makefile}
 
 \usepackage{svg}
 \newcommand{\javusdev}{\mintinline{bash}{javusdev}\xspace}
@@ -199,30 +175,19 @@
 
 \newcommand{\examplemodule}{\mintinline[breaklines,breakafter=_]{python}{example_attack.py}\xspace}
 
-% TODO publish the project and add the url!
-% \newcommand{\gitlaburl}{\url{https://gitlab.com/quapka/javus}}
 \newcommand{\githuburl}{https://github.com/quapka/javus.git}
-% TODO fix the minted environements, see projects/sandbox/latex/mint-caption
 
 \newcommand{\finalcommit}{TODO HASH OF THE FINAL COMMIT}
 
-% \input{src/metadata.tex}
 \input{src/jc-framework-iso7816.tex}
 
-% \usepackage{listing}
 \usepackage[outputdir=build]{minted}
 \newcommand{\filepath}[1]{\mintinline[breakanywhere,breaklines=true,breakafter=./-]{python}{#1}}
 \newcommand{\class}[1]{\mintinline[breakanywhere,breaklines=true,breakafter=.]{python}{#1}}
 
 \newcommand{\constantstaticfieldref}{\mintinline[breaklines,breakafter=_]{python}{CONSTANT_StaticFieldref_info.offset}\xspace}
 
-% break lines in \mintinline commands
-% \setmintedinline{breakafter=.}
-
-% \newcommand{\PYZdl}{\textdollar}
 \usepackage{xspace}
-
-% TODO how to typeset undescores!
 
 \hyphenation{APDU}
 \hyphenation{APDUs}
@@ -233,7 +198,6 @@
 \hyphenation{CAP}
 \hyphenation{CAPs}
 
-% \newcommand{\unsuccessful}{(un)suc\discretionary{-}{}cessful}
 \hyphenation{suc-cess-ful}
 \hyphenation{sta-ges}
 
@@ -245,22 +209,8 @@
 
 \hyphenation{straight-for-ward}
 
-% \setlength{\tabcolsep}{20pt}
-% \renewcommand{\arraystretch}{1.5}
-
 \newlength{\oldtabcolsep}
 \setlength{\oldtabcolsep}{\tabcolsep}
 
 \newlength{\oldfloatsep}
 \setlength{\oldfloatsep}{\floatsep}
-% \newlength{\oldarraystretch}
-% \setlength{\oldarraystretch}{\arraystretch}
-% \setlength{\parindent}{2em}
-
-% \oldtabcolsep{\tabcolsep}
-% \oldarraystretch{\arraystretch}
-% \setlength{\myparindent}{\parindent}
-% \setlength{\parindent}{2em}
-
-%restore original
-% \setlength{\parindent}{\myparindent}
